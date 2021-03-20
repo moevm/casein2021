@@ -1,0 +1,52 @@
+<div>
+    <h1>Создать курс</h1>
+    <form id="create_course" action="/update/" method="post">
+        <label for="name">Course name</label>
+        <input type="text" name="course_name" id="course_name" >
+        <h3>Tasks:</h3>
+        <input type="hidden" name="tasks_count" id="tasks_count" value="0">
+        <div id="tasks">
+
+        </div>
+        <input type="submit" value="Save">
+    </form>
+    <button id="add_task" onclick="add_new_task()">Add task</button>
+</div>
+
+<script>
+    index = 1;
+    function add_new_task() {
+        input_name = document.createElement("input")
+        input_name.setAttribute('type', 'text')
+        input_name.setAttribute('name', 'name_'+ index)
+        input_name.setAttribute('id', 'name_'+ index)
+        input_condition = document.createElement("input")
+        input_condition.setAttribute('type', 'text')
+        input_condition.setAttribute('name', 'condition_'+ index)
+        input_condition.setAttribute('id', 'condition_'+ index)
+        input_type = document.createElement("input")
+        input_type.setAttribute('type', 'text')
+        input_type.setAttribute('name', 'type_'+ index)
+        input_type.setAttribute('id', 'type_'+ index)
+        input_check = document.createElement("input")
+        input_check.setAttribute('type', 'text')
+        input_check.setAttribute('name', 'check_'+ index)
+        input_check.setAttribute('id', 'check_'+ index)
+        new_task = document.createElement("div")
+        new_task.appendChild(input_name)
+        new_task.appendChild(input_condition)
+        new_task.appendChild(input_type)
+        new_task.appendChild(input_check)
+        index++;
+        document.getElementById("tasks").appendChild(new_task)
+    }
+
+    form = document.getElementById("create_course")
+    random_id = Math.random().toString(36).substr(2, 9);
+    form.setAttribute("action", "/course/update/" + random_id)
+
+    form.onsubmit = function(){
+        document.getElementById("tasks_count").value = index-1;
+        form.submit()
+    }
+</script>

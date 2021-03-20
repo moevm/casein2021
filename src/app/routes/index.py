@@ -12,3 +12,4 @@ def index():
 
 @bp.route('/user/create')
 def user_create():
+    return 1
