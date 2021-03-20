@@ -17,7 +17,7 @@ def course_create():
 @bp.route('/<course_id>')
 def course_page(course_id):
     course = get_course(course_id)
-    return course.to_json() if course else (f'Курс {course_id} не найден', 404)
+    return render_template("course_id.html", course=course) if course else (f'Курс {course_id} не найден', 404)
 
 
 @bp.route('/update/<course_id>', methods=['GET', 'POST'])
