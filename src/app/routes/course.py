@@ -20,13 +20,13 @@ def course_page(course_id):
     return course.to_json() if course else (f'Курс {course_id} не найден', 404)
 
 
-@bp.route('/update/<course_id>', methods=['UPDATE', 'POST'])
+@bp.route('/update/<course_id>', methods=['GET', 'POST'])
 def course_update(course_id):
     """
     POST - страница редактирования курса (== страница создания курса с заполненными полями)
-    UPDATE - обновление курса
+    GET - обновление курса
     """
-    if request.method == 'UPDATE':
+    if request.method == 'GET':
         return get_course(course_id)
     else:
         # пример словаря с клиента
