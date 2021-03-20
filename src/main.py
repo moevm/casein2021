@@ -2,6 +2,7 @@ from flask import Flask
 from flask_mongoengine import MongoEngine
 
 from app.routes.index import bp as index_bp
+from app.routes.course import bp as course_bp
 
 
 def get_db(): return db
@@ -16,8 +17,9 @@ app.config['MONGODB_SETTINGS'] = {
     'host':'mongo',
     'port':27017
 }
-app.register_blueprint(index_bp)
 
+app.register_blueprint(index_bp)
+app.register_blueprint(course_bp)
 
 db = MongoEngine(app)
 
