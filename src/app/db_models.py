@@ -12,7 +12,7 @@ class User(me.Document):
     progress  = me.DictField() 
 
 
-class Task(me.EmbeddedDocument):
+class Task(me.Document):
     _id = me.StringField(primary_key=True)
     name = me.StringField()
     condition = me.StringField()
@@ -35,7 +35,7 @@ class Task(me.EmbeddedDocument):
 class Course(me.Document):
     _id = me.StringField(primary_key=True)
     name = me.StringField()
-    tasks = me.EmbeddedDocumentListField(Task)
+    tasks = me.ListField(me.ReferenceField(Task))
     users = me.ListField(me.ReferenceField(User))
     some_info = me.DictField() 
 
@@ -47,7 +47,7 @@ class Course(me.Document):
 
         return Course(_id=course_object.get('_id'),
                 name=course_object.get('name'),
-                tasks=[Task.from_object(task) for task in course_object['tasks']])
+                tasks=[Task.from_object(task).save() for task in course_object['tasks']])
 
 
 def get_course(course_id): return Course.objects(_id=course_id).first()
