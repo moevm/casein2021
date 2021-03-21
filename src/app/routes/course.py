@@ -1,4 +1,4 @@
-from flask import Blueprint, request, redirect, url_for, render_template
+from flask import Blueprint, request, redirect, url_for, render_template, flash
 from app.db_models import Course, Task, get_course
 from random import randint
 
@@ -35,7 +35,7 @@ def course_update(course_id):
     else:
         # пример словаря с клиента
         tasks=[]
-        for i in range(1, int(request.form['tasks_count'])+1):
+        for i in range(0, int(request.form['tasks_count'])):
             task = dict(_id='_id'+ str(i), name=request.form['name_' + str(i)], condition=request.form['condition_' + str(i)], task_type=request.form['type_' + str(i)], check={'test':request.form['check_' + str(i)]})
             tasks.append(task)
         obj = {'_id': course_id, 'name': request.form['course_name'], 'tasks': tasks}

@@ -20,25 +20,24 @@
                     <input type="hidden" name="tasks_count" id="tasks_count" value="{% if is_editing %}{{course.tasks | length}}{% endif %}">
                     <div id="tasks">
                     {% if is_editing %}
-                        {% set i = 1 %}
                         {% for task in course.tasks %}
                             <div class="mb-3">
-                                <h4>Задание {{i}}</h4>
+                                <h4>Задание {{loop.index0+1}}</h4>
                                 <div class="mb-3">
-                                    <label for="name_{{i}}" class="form-label">Название задания</label>
-                                    <input type="text" name="name_{{i}}" id="name_{{i}}" value="{{task.name}}" class="form-control" required>
+                                    <label for="name_{{loop.index0}}" class="form-label">Название задания</label>
+                                    <input type="text" name="name_{{loop.index0}}" id="name_{{loop.index0}}" value="{{task.name}}" class="form-control" required>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="condition_{{i}}" class="form-label">Условие</label>
-                                    <input type="text" name="condition_{{i}}" id="condition_{{i}}" value="{{task.condition}}" class="form-control" required>
+                                    <label for="condition_{{loop.index0}}" class="form-label">Условие</label>
+                                    <input type="text" name="condition_{{loop.index0}}" id="condition_{{loop.index0}}" value="{{task.condition}}" class="form-control" required>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="type_{{i}}" class="form-label">Тип задания</label>
-                                    <input type="" name="type_{{i}}" id="type_{{i}}" value="{{task.task_type}}" class="form-control" required>
+                                    <label for="type_{{loop.index0}}" class="form-label">Тип задания</label>
+                                    <input type="" name="type_{{loop.index0}}" id="type_{{loop.index0}}" value="{{task.task_type}}" class="form-control" required>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="check_{{i}}" class="form-label">Проверка</label>
-                                    <input type="text" name="check_{{i}}" id="check_{{i}}" value="{{task.check['test']}}" class="form-control" required>
+                                    <label for="check_{{loop.index0}}" class="form-label">Проверка</label>
+                                    <input type="text" name="check_{{loop.index0}}" id="check_{{loop.index0}}" value="{{task.check['test']}}" class="form-control" required>
                                 </div>
                                 <hr>
                             </div>
@@ -59,10 +58,10 @@
 
 {% block script %}
 <script>
-    var index = {% if is_editing %}{{course.tasks | length + 1}}{% else %}1{% endif %};
+    var index = {% if is_editing %}{{course.tasks | length}}{% else %}0{% endif %};
     function add_new_task() {
         var task_name = document.createElement("h4")
-        task_name.innerText = "Задание " + index
+        task_name.innerText = "Задание " + (index+1)
         var input_name = document.createElement("input")
         input_name.setAttribute('type', 'text')
         input_name.setAttribute('name', 'name_'+ index)
@@ -144,7 +143,7 @@
     form.setAttribute("action", "/course/update/" + course_id)
 
     form.onsubmit = function(event){
-        document.getElementById("tasks_count").value = index-1;       
+        document.getElementById("tasks_count").value = index;       
     }
 </script>
 
