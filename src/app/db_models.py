@@ -50,4 +50,8 @@ class Course(me.Document):
                 tasks=[Task.from_object(task) for task in course_object['tasks']])
 
 
+class File(me.Document):
+    title = me.StringField()
+    filename = me.StringField()
+
 def get_course(course_id): return Course.objects(_id=course_id).first()
