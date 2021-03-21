@@ -7,8 +7,8 @@ class NoRequiredField(Exception):
 
 
 class Role(me.Document, RoleMixin):
-    name = me.StringField()(max_length=50, unique=True)
-    description = me.StringField()(max_length=255)
+    name = me.StringField(max_length=50, unique=True)
+    description = me.StringField(max_length=255)
 
     def __unicode__(self):
         return self.name
