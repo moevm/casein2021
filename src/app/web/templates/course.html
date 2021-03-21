@@ -7,8 +7,7 @@
 
 <div class="container">
     <div class="row">
-        <div class="col-5"></div>
-        <div class="col-2 mt-5 mb-5">
+        <div class="mt-5 mb-5 mx-auto" style="width: 150px">
             <a href="/course/create" class="btn btn-primary">Создать новый курс</a>
         </div>
     </div>
@@ -17,7 +16,7 @@
         <div class="row mb-4">
     {% for course in course_row %}
         {% if course.name %}
-        <div class="col-4">
+        <div class="col-lg-4 col-sm-12 mb-2">
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">
