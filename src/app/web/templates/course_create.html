@@ -6,65 +6,133 @@
 
 {% block content %}
 
-<div>
-    <h1>{% if is_editing %}Редактировать курс{% else %}Создать курс{% endif %}</h1>
-    <form id="create_course" action="/update/" method="post">
-        <label for="name">Course name</label>
-        <input type="text" name="course_name" id="course_name" {% if is_editing %}value="{{course.name}}"{% endif %} required>
-        <h3>Tasks:</h3>
-        <input type="hidden" name="tasks_count" id="tasks_count" value="{% if is_editing %}{{course.tasks | length}}{% endif %}">
-        <div id="tasks">
-        {% if is_editing %}
-            {% set i = 1 %}
-            {% for task in course.tasks %}
-                <div>
-                <input type="text" name="name_{{i}}" id="name_{{i}}" value="{{task.name}}" required>
-                <input type="text" name="condition_{{i}}" id="condition_{{i}}" value="{{task.condition}}" required>
-                <input type="text" name="type_{{i}}" id="type_{{i}}" value="{{task.task_type}}" required>
-                <input type="text" name="check_{{i}}" id="check_{{i}}" value="{{task.check['test']}}" required>
+<div class="container">
+    <div class="row">
+        <div class="col-10">
+            <h1>{% if is_editing %}Редактировать курс{% else %}Создать курс{% endif %}</h1>
+
+            <form id="create_course" action="/update/" method="post">
+                <div class="mb-3">
+                    <label for="course_name" class="form-label">Название курса</label>
+                    <input type="text" name="course_name" id="course_name" class="form-control" {% if is_editing %}value="{{course.name}}"{% endif %} required>
                 </div>
-            {% endfor %}
-        {% endif %}
+                    <h3>Tasks:</h3>
+                    <input type="hidden" name="tasks_count" id="tasks_count" value="{% if is_editing %}{{course.tasks | length}}{% endif %}">
+                    <div id="tasks">
+                    {% if is_editing %}
+                        {% for task in course.tasks %}
+                            <div class="mb-3">
+                                <h4>Задание {{loop.index0+1}}</h4>
+                                <div class="mb-3">
+                                    <label for="name_{{loop.index0}}" class="form-label">Название задания</label>
+                                    <input type="text" name="name_{{loop.index0}}" id="name_{{loop.index0}}" value="{{task.name}}" class="form-control" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="condition_{{loop.index0}}" class="form-label">Условие</label>
+                                    <input type="text" name="condition_{{loop.index0}}" id="condition_{{loop.index0}}" value="{{task.condition}}" class="form-control" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="type_{{loop.index0}}" class="form-label">Тип задания</label>
+                                    <input type="" name="type_{{loop.index0}}" id="type_{{loop.index0}}" value="{{task.task_type}}" class="form-control" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="check_{{loop.index0}}" class="form-label">Проверка</label>
+                                    <input type="text" name="check_{{loop.index0}}" id="check_{{loop.index0}}" value="{{task.check['test']}}" class="form-control" required>
+                                </div>
+                                <hr>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                <input type="submit" value="Сохранить курс" class="btn btn-primary">
+            </form>
         </div>
-        <input type="submit" value="Save">
-    </form>
-    <button id="add_task" onclick="add_new_task()">Add task</button>
+        <div class="col-2">
+            <div class="mt-5">
+                <button id="add_task" onclick="add_new_task()" class="btn btn-secondary">Добавить задание</button>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
 
 {% block script %}
 <script>
-    var index = {% if is_editing %}{{course.tasks | length + 1}}{% endif %};
+    var index = {% if is_editing %}{{course.tasks | length}}{% else %}0{% endif %};
     function add_new_task() {
+        var task_name = document.createElement("h4")
+        task_name.innerText = "Задание " + (index+1)
         var input_name = document.createElement("input")
         input_name.setAttribute('type', 'text')
         input_name.setAttribute('name', 'name_'+ index)
         input_name.setAttribute('id', 'name_'+ index)
         input_name.setAttribute('required', 'required')
+        input_name.setAttribute('class', 'form-control')
+        var input_name_label = document.createElement("label")
+        input_name_label.setAttribute('for', 'name_'+ index)
+        input_name_label.setAttribute('class', 'form-label')
+        input_name_label.innerText = 'Название задания'
+
+        var input_name_div = document.createElement("div")
+        input_name_div.setAttribute('class', 'mb-3')
+        input_name_div.appendChild(input_name_label)
+        input_name_div.appendChild(input_name)
         
         var input_condition = document.createElement("input")
         input_condition.setAttribute('type', 'text')
         input_condition.setAttribute('name', 'condition_'+ index)
         input_condition.setAttribute('id', 'condition_'+ index)
         input_condition.setAttribute('required', 'required')
+        input_condition.setAttribute('class', 'form-control')
+        var input_condition_label = document.createElement("label")
+        input_condition_label.setAttribute('class', 'form-label')
+        input_condition_label.setAttribute('for', 'condition_'+ index)
+        input_condition_label.innerText = 'Условие'
+
+        var input_condition_div = document.createElement("div")
+        input_condition_div.setAttribute('class', 'mb-3')
+        input_condition_div.appendChild(input_condition_label)
+        input_condition_div.appendChild(input_condition)
         
         var input_type = document.createElement("input")
         input_type.setAttribute('type', 'text')
         input_type.setAttribute('name', 'type_'+ index)
         input_type.setAttribute('id', 'type_'+ index)
         input_type.setAttribute('required', 'required')
+        input_type.setAttribute('class', 'form-control')
+        var input_type_label = document.createElement("label")
+        input_type_label.setAttribute('for', 'type_'+ index)
+        input_type_label.setAttribute('class', 'form-label')
+        input_type_label.innerText = 'Тип задания'
+
+        var input_type_div = document.createElement("div")
+        input_type_div.setAttribute('class', 'mb-3')
+        input_type_div.appendChild(input_type_label)
+        input_type_div.appendChild(input_type)
 
         var input_check = document.createElement("input")
         input_check.setAttribute('type', 'text')
         input_check.setAttribute('name', 'check_'+ index)
         input_check.setAttribute('id', 'check_'+ index)
         input_check.setAttribute('required', 'required')
+        input_check.setAttribute('class', 'form-control')
+        var input_check_label = document.createElement("label")
+        input_check_label.setAttribute('for', 'check_'+ index)
+        input_check_label.setAttribute('class', 'form-label')
+        input_check_label.innerText = 'Проверка'
+
+        var input_check_div = document.createElement("div")
+        input_check_div.setAttribute('class', 'mb-3')
+        input_check_div.appendChild(input_check_label)
+        input_check_div.appendChild(input_check)
         
         var new_task = document.createElement("div")
-        new_task.appendChild(input_name)
-        new_task.appendChild(input_condition)
-        new_task.appendChild(input_type)
-        new_task.appendChild(input_check)
+        new_task.setAttribute('class', 'mb-3')
+        new_task.appendChild(task_name)
+        new_task.appendChild(input_name_div)
+        new_task.appendChild(input_condition_div)
+        new_task.appendChild(input_type_div)
+        new_task.appendChild(input_check_div)
         index++;
         document.getElementById("tasks").appendChild(new_task)
     }
@@ -75,7 +143,7 @@
     form.setAttribute("action", "/course/update/" + course_id)
 
     form.onsubmit = function(event){
-        document.getElementById("tasks_count").value = index-1;       
+        document.getElementById("tasks_count").value = index;       
     }
 </script>
 

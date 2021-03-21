@@ -4,18 +4,38 @@
 
 {% block content %}
 
-<div>
-    <a href="/course/create">Создать курс</a>
+
+<div class="container">
+    <div class="row">
+        <div class="mt-5 mb-5 mx-auto" style="width: 150px">
+            <a href="/course/create" class="btn btn-primary">Создать новый курс</a>
+        </div>
+    </div>
+{% if courses is defined %}
+    {% for course_row in courses | batch(3, '&nbsp;') %}
+        <div class="row mb-4">
+    {% for course in course_row %}
+        {% if course.name %}
+        <div class="col-lg-4 col-sm-12 mb-2">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        {{course.name}}
+                    </h5>
+                    <hr>
+                    <p class="card-text">
+                        Здесь будет представлена дополнительная информация о курсе.
+                    </p>
+                    <a href='/course/{{course._id}}' class="btn btn-secondary">Открыть</a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    {% endfor %}
+    </div>       
+    {% endfor%}
+{% endif %}
 </div>
 
-{% if courses is defined %}
-    <ul>
-    {% for course in courses %}
-    <li>
-        <a href='/course/{{course._id}}'>{{course.name}}</a><br>
-    </li>
-    {% endfor %}
-    </ul>
-{% endif%}
 
 {% endblock %}
