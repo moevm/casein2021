@@ -1,3 +1,4 @@
+from flask_security import UserMixin, RoleMixin
 import mongoengine as me
 import datetime
 
@@ -5,12 +6,21 @@ class NoRequiredField(Exception):
     pass
 
 
-class User(me.Document):
+class Role(me.Document, RoleMixin):
+    name = me.StringField()(max_length=50, unique=True)
+    description = me.StringField()(max_length=255)
+
+    def __unicode__(self):
+        return self.name
+
+
+class User(me.Document, UserMixin):
     _id = me.StringField(primary_key=True)
-    password = me.StringField()
-    full_name = me.StringField()
-    # role = me.IntField()  # должно задаваться flask securiry
-    progress  = me.DictField() 
+    email = me.StringField(max_length=30)
+    password = me.StringField(max_length=30)
+    full_name = me.StringField(max_length=50)
+    confirmed_at = me.DateTimeField(default=datetime.datetime.utcnow())
+    roles = me.ListField(me.ReferenceField(Role), default=[])
 
 
 class Task(me.Document):
