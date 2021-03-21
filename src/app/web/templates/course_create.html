@@ -34,7 +34,7 @@
 
 {% block script %}
 <script>
-    var index = {% if is_editing %}{{course.tasks | length + 1}}{% endif %};
+    var index = {% if is_editing %}{{course.tasks | length + 1}}{% else %}1{% endif %};
     function add_new_task() {
         var input_name = document.createElement("input")
         input_name.setAttribute('type', 'text')
