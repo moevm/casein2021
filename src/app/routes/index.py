@@ -12,6 +12,11 @@ def index():
     return render_template("index.html")
 
 
+@bp.route('/users')
+def users_page():
+    return render_template("users.html")
+
+
 @bp.route('/user/create')
 def user_create():
     return redirect(f'/user/update/{randint(0,10*10)}?new=true')

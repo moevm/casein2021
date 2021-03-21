@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}Пользователь {{user.name}}{% endblock %}
+
+{% block content %}
+
+<div>
+    <a href="/users">Все пользователи</a>
+    <a href="/user/update/{{ user._id }}">Редактировать пользователя</a>
+</div>
+
+<div class="container">
+    <form>
+        <fieldset disabled>
+          <legend>Профиль пользователя</legend>
+          <div class="mb-3">
+            <label for="disabledTextInput1" class="form-label">Полное имя</label>
+            <input type="text" id="disabledTextInput1" class="form-control" placeholder="{{ user.full_name }}">
+          </div>
+          <div class="mb-3">
+            <label for="disabledTextInput2" class="form-label">E-mail</label>
+            <input type="email" id="disabledTextInput2" class="form-control" placeholder="{{ user.email }}">
+          </div>
+          <div class="mb-3">
+            <label for="disabledTextInput3" class="form-label">Пароль</label>
+            <input type="password" id="disabledTextInput3" class="form-control" placeholder="{{ user.password }}">
+          </div>
+        </fieldset>
+      </form>
+</div>
+
+
+{% endblock %}
