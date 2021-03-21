@@ -30,6 +30,15 @@ def files_list():
 def upload_file():
     return redirect(f'/files/update/{str(uuid4())}?new=true')
 
+@bp.route('/remove/<file_id>', methods=['GET', 'POST'])
+def remove_file(file_id):
+    file = get_file(file_id)
+    if file:
+        if os.path.exists(os.path.join(UPLOAD_FOLDER,file.filename)):
+            os.remove(os.path.join(UPLOAD_FOLDER,file.filename))
+        file.delete()
+    return redirect(f'/files/')
+
 @bp.route('/update/<file_id>', methods=['GET', 'POST'])
 def update_file(file_id):
     """
@@ -48,7 +57,8 @@ def update_file(file_id):
             if file.filename == '':
                 return 'No selected file'
             if file and allowed_file(file.filename):
-                filename = secure_filename(file.filename)
+                ext = file.filename.rsplit('.', 1)[1].lower()
+                filename = f'{uuid4()}.{ext}'
                 db_file = File(_id=file_id, title=request.form.get('title'), filename=filename)
                 db_file.save()
                 file.save(os.path.join(UPLOAD_FOLDER, filename))
@@ -58,8 +68,9 @@ def update_file(file_id):
                 file = request.files['file']
                 logger.error(f'POST, is existing: {file}')
                 if file and allowed_file(file.filename):
+                    ext = file.filename.rsplit('.', 1)[1].lower()
                     os.remove(os.path.join(UPLOAD_FOLDER, existing.filename))
-                    filename = secure_filename(file.filename)
+                    filename = f'{uuid4()}.{ext}'
                     file.save(os.path.join(UPLOAD_FOLDER, filename))
                     existing.filename = filename
             existing.title=request.form.get('title')
@@ -73,6 +84,6 @@ def update_file(file_id):
             return render_template("upload_documents.html", file=file)
         else:
             return f"Файл {file_id} не найден", 404
-    
+
 
 def get_file(file_id): return File.objects(_id=file_id).first()

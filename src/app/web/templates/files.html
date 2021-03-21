@@ -12,7 +12,7 @@
     <ul>
     {% for file in files %}
     <li>
-        <a href='/files/update/{{file._id}}'>{{file.title}}</a><br>
+        <a href='/files/update/{{file._id}}'>{{file.title}}</a>; <a href='/files/remove/{{file._id}}'>remove</a><br>
     </li>
     {% endfor %}
     </ul>
