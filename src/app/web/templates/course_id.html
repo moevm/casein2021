@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block title %}Курс {{course.name}}{% endblock %}
+
+{% block content %}
+
+<div>
+    <a href="/course">Все курсы</a>
+    <a href="/course/update/{{ course._id }}">Редактировать курс</a>
+</div>
+
+<h2>{{course.name}}</h2>
+
+<table cellspacing="2" border="1" cellpadding="5">
+    <tbody>
+    {% for task in course.tasks %}
+        <tr>
+            <td>{{task.name}}</td>
+            <td>{{task.condition}}</td>
+            <td>{{task.task_type}}</td>
+            <td>{{task.check['test']}}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
