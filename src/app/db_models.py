@@ -23,6 +23,11 @@ class User(me.Document, UserMixin):
     roles = me.ListField(me.ReferenceField(Role), default=[])
 
 
+class AdapterEmployees(me.EmbeddedDocument):
+    user = me.ReferenceField(User)
+    users = me.ListField(me.ReferenceField(User), default=[])
+
+
 class Task(me.Document):
     _id = me.StringField(primary_key=True)
     name = me.StringField()
