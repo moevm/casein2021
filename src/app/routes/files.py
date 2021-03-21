@@ -1,7 +1,7 @@
 import os
 import sys
 from uuid import uuid4
-from flask import Blueprint, request, flash, redirect, url_for, render_template
+from flask import Blueprint, request, flash, redirect, url_for, render_template, current_app
 from app.db_models import File
 from werkzeug.utils import secure_filename
 import logging
@@ -11,8 +11,9 @@ logger = logging.getLogger('root')
 bp = Blueprint('files', __name__, url_prefix='/files')
 
 # TODO: to config
-UPLOAD_FOLDER = './static/documents/'
+UPLOAD_FOLDER = 'app/web/static/documents/'
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'svg'}
+logger.error(f"UPLOAD_FOLDER: {UPLOAD_FOLDER}")
 
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)

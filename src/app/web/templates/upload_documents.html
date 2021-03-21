@@ -16,6 +16,67 @@
         <br><br>
         <input type="submit" value="Save">
     </form>
-    
+
+    {% if is_editing %}
+        <canvas id="the-canvas" style='border: 1px solid black;direction: ltr;'>
+        </canvas>
+    {% endif %}
 </div>
 {% endblock %}
+
+{% if is_editing %}
+    {% block script %}
+        <base href="/">
+        <script src="static/js/pdf.min.js" ></script>
+        <script>
+            console.log('HELOOW')
+    //
+        // If absolute URL from the remote server is provided, configure the CORS
+        // header on that server.
+        //
+        // #TODO: get static
+        let url = "{{ url_for('static', filename='documents/')}}{{file.filename}}"
+        
+        
+        console.log('url:', url)
+
+        //
+        // The workerSrc property shall be specified.
+        //
+        pdfjsLib.GlobalWorkerOptions.workerSrc =
+            'static/js/pdf.worker.min.js';
+
+        //
+        // Asynchronous download PDF
+        //
+        var loadingTask = pdfjsLib.getDocument(url);
+        loadingTask.promise.then(function(pdf) {
+            console.log('file:', pdf)
+            //
+            // Fetch the first page
+            //
+            pdf.getPage(1).then(function(page) {
+            var scale = 1.5;
+            var viewport = page.getViewport({ scale: scale, });
+
+            //
+            // Prepare canvas using PDF page dimensions
+            //
+            var canvas = document.getElementById('the-canvas');
+            var context = canvas.getContext('2d');
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+
+            //
+            // Render PDF page into canvas context
+            //
+            var renderContext = {
+                canvasContext: context,
+                viewport: viewport,
+            };
+            page.render(renderContext);
+            });
+        });
+        </script>
+    {% endblock %}
+{% endif %}
