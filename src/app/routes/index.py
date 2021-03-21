@@ -42,12 +42,7 @@ def user_update(user_id):
             return f"Пользователь {user_id} не найден", 404
     else:
         # пример словаря с клиента
-        #TODO Изменить на поля для юзера
-        tasks=[]
-        for i in range(0, int(request.form['tasks_count'])):
-            task = dict(_id='_id'+ str(i), name=request.form['name_' + str(i)], condition=request.form['condition_' + str(i)], task_type=request.form['type_' + str(i)], check={'test':request.form['check_' + str(i)]})
-            tasks.append(task)
-        obj = {'_id': user_id, 'name': request.form['user_name'], 'tasks': tasks}
-        user = user.from_object(obj)
+        obj = {'_id': user_id, 'email': request.form['email'], 'password': request.form['password'], 'full_name': request.form['full_name']}
+        user = User.from_object(obj)
         user.save()
         return redirect(f'/user/{user_id}')

@@ -11,7 +11,7 @@
         <div class="col-10">
             <h1>{% if is_editing %}Редактировать пользователя{% else %}Создать пользователя{% endif %}</h1>
 
-            <form id="create_user" action="user/update/" method="post">
+            <form id="create_user" action="/user/update/" method="post">
                 <div class="mb-3">
                     <label for="full_name" class="form-label">Полное имя</label>
                     <input type="text" name="full_name" id="full_name" class="form-control" {% if is_editing %}value="{{user.full_name}}"{% endif %} required>
@@ -31,4 +31,13 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block script %}
+<script>
+    var form = document.getElementById("create_user")
+    var user_id = location.pathname.split('/')[3]
+    form.setAttribute("action", "/user/update/" + user_id)
+</script>
+
 {% endblock %}

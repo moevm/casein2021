@@ -15,12 +15,12 @@
     {% for user_row in users | batch(3, '&nbsp;') %}
         <div class="row mb-4">
     {% for user in user_row %}
-        {% if user.name %}
+        {% if user.full_name is defined %}
         <div class="col-lg-4 col-sm-12 mb-2">
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">
-                        {{user.name}}
+                        {{user.full_name}}
                     </h5>
                     <hr>
                     <p class="card-text">
