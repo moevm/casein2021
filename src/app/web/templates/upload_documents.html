@@ -1,14 +1,21 @@
 {% extends 'base.html' %}
 
-{% block title %}Загрузка документов{% endblock %}
+{% set is_editing = file is defined and file %}
+
+{% block title %}{% if is_editing %}Редактирование докумета{% else %}Добавление документа{% endif %}{% endblock %}
 
 {% block content %}
 
-<h1>Upload new File</h1>
-<form method=post enctype=multipart/form-data>
-    <input type=text name=title>
-    <input type=file name=file>
-    <input type=submit value=Upload>
-</form>
-
+<div>
+    <h1>{% if is_editing %}Редактировать документ{% else %}Создать документ{% endif %}</h1>
+    
+    <form id="create_document" method="post" enctype='multipart/form-data'>
+        <input type=text name=title {% if is_editing %}value="{{file.title}}"{% endif %} required>
+        <br><br>
+        <input type=file name=file>
+        <br><br>
+        <input type="submit" value="Save">
+    </form>
+    
+</div>
 {% endblock %}

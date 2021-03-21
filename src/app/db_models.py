@@ -51,6 +51,7 @@ class Course(me.Document):
 
 
 class File(me.Document):
+    _id = me.StringField(primary_key=True)
     title = me.StringField()
     filename = me.StringField()
 
