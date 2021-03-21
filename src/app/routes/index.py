@@ -14,7 +14,7 @@ def index():
 
 @bp.route('/users')
 def users_page():
-    return render_template("users.html")
+    return render_template("users.html", users=User.objects())
 
 
 @bp.route('/user/create')

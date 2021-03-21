@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}Пользователи{% endblock %}
+
+{% block content %}
+
+
+<div class="container">
+    <div class="row">
+        <div class="mt-5 mb-5 mx-auto" style="width: 150px">
+            <a href="/user/create" class="btn btn-primary">Создать нового пользователя</a>
+        </div>
+    </div>
+{% if users is defined %}
+    {% for user_row in users | batch(3, '&nbsp;') %}
+        <div class="row mb-4">
+    {% for user in user_row %}
+        {% if user.name %}
+        <div class="col-lg-4 col-sm-12 mb-2">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        {{user.name}}
+                    </h5>
+                    <hr>
+                    <p class="card-text">
+                        Здесь будет представлена дополнительная информация о пользователе.
+                    </p>
+                    <a href='/user/{{user._id}}' class="btn btn-secondary">Открыть</a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    {% endfor %}
+    </div>       
+    {% endfor%}
+{% endif %}
+</div>
+
+
+{% endblock %}
