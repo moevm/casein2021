@@ -1,3 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}Курсы{% endblock %}
+
+{% block content %}
+
 <div>
     <a href="/course/create">Создать курс</a>
 </div>
+
+{% if courses is defined %}
+    <ul>
+    {% for course in courses %}
+    <li>
+        <a href='/course/{{course._id}}'>{{course.name}}</a><br>
+    </li>
+    {% endfor %}
+    </ul>
+{% endif%}
+
+{% endblock %}
