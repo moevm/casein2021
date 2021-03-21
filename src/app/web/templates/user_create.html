@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% set is_editing = user is defined and user %}
+
+{% block title %}{% if is_editing %}Редактирование пользователя{% else %}Создание пользователя{% endif %}{% endblock %}
+
+{% block content %}
+
+<div class="container">
+    <div class="row">
+        <div class="col-10">
+            <h1>{% if is_editing %}Редактировать пользователя{% else %}Создать пользователя{% endif %}</h1>
+
+            <form id="create_user" action="user/update/" method="post">
+                <div class="mb-3">
+                    <label for="full_name" class="form-label">Полное имя</label>
+                    <input type="text" name="full_name" id="full_name" class="form-control" {% if is_editing %}value="{{user.full_name}}"{% endif %} required>
+                </div>
+                <div class="mb-3">
+                    <label for="email" class="form-label">E-mail</label>
+                    <input type="email" name="email" id="email" class="form-control" {% if is_editing %}value="{{user.email}}"{% endif %} required>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Пароль</label>
+                    <input type="password" name="password" id="password" class="form-control" {% if is_editing %}value="{{user.password}}"{% endif %} required>
+                </div>
+                    
+                </div>
+                <input type="submit" value="Сохранить" class="btn btn-primary">
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
