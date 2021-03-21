@@ -26,29 +26,18 @@
 
 {% if is_editing %}
     {% block script %}
-        <base href="/">
         <script src="static/js/pdf.min.js" ></script>
         <script>
-            console.log('HELOOW')
-    //
-        // If absolute URL from the remote server is provided, configure the CORS
-        // header on that server.
-        //
-        // #TODO: get static
+      
         let url = "{{ url_for('static', filename='documents/')}}{{file.filename}}"
         
         
         console.log('url:', url)
 
-        //
-        // The workerSrc property shall be specified.
-        //
         pdfjsLib.GlobalWorkerOptions.workerSrc =
             'static/js/pdf.worker.min.js';
 
-        //
-        // Asynchronous download PDF
-        //
+        
         var loadingTask = pdfjsLib.getDocument(url);
         loadingTask.promise.then(function(pdf) {
             console.log('file:', pdf)

@@ -12,7 +12,9 @@
     <ul>
     {% for file in files %}
     <li>
-        <a href='/files/update/{{file._id}}'>{{file.title}}</a>; <a href='/files/remove/{{file._id}}'>remove</a><br>
+        <a href='/files/update/{{file._id}}'>{{file.title}}</a>; 
+        <a href='/files/remove/{{file._id}}'>remove</a> 
+        <a href="{{ url_for('static', filename='documents/')}}{{file.filename}}"> show </a><br>
     </li>
     {% endfor %}
     </ul>
