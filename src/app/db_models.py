@@ -1,4 +1,5 @@
 import mongoengine as me
+import datetime
 
 class NoRequiredField(Exception):
     pass
@@ -48,6 +49,14 @@ class Course(me.Document):
         return Course(_id=course_object.get('_id'),
                 name=course_object.get('name'),
                 tasks=[Task.from_object(task).save() for task in course_object['tasks']])
+
+
+class Solution(me.Document):
+    _id = me.StringField(primary_key=True)
+    task = me.ReferenceField(Task)
+    user = me.ReferenceField(User)
+    score = me.IntField(default=0)
+    datetime = me.DateTimeField(default=datetime.datetime.utcnow())
 
 
 def get_course(course_id): return Course.objects(_id=course_id).first()
