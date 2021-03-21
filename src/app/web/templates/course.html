@@ -4,11 +4,14 @@
 
 {% block content %}
 
-<div>
-    <a href="/course/create">Создать курс</a>
-</div>
 
 <div class="container">
+    <div class="row">
+        <div class="col-5"></div>
+        <div class="col-2 mt-5 mb-5">
+            <a href="/course/create" class="btn btn-primary">Создать новый курс</a>
+        </div>
+    </div>
 {% if courses is defined %}
     {% for course_row in courses | batch(3, '&nbsp;') %}
         <div class="row mb-4">
@@ -24,7 +27,7 @@
                     <p class="card-text">
                         Здесь будет представлена дополнительная информация о курсе.
                     </p>
-                    <a href='/course/{{course._id}}' class="btn btn-primary">Открыть</a>
+                    <a href='/course/{{course._id}}' class="btn btn-secondary">Открыть</a>
                 </div>
             </div>
         </div>
