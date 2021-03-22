@@ -1,7 +1,8 @@
-from flask import Blueprint, request, redirect, url_for, render_template, flash
+from flask import Blueprint, request, redirect, url_for, render_template
 from app.db_models import Course, Task, DBManager
 from uuid import uuid4
 from json import loads as json_loads
+
 
 bp = Blueprint('course', __name__, url_prefix='/course')
 
@@ -15,9 +16,6 @@ def course_index():
 def course_create():
     new_course = Course(_id=str(uuid4()))
     new_course.save()
-    import logging
-    logger = logging.getLogger('root')
-    logger.error('/create ' + str(type(new_course._id)))
     return redirect(url_for('course.course_update', course_id=new_course._id, new=True))
 
 
@@ -27,6 +25,21 @@ def course_page(course_id):
     return render_template("course_id.html", course=course) if course else (f'Курс {course_id} не найден', 404)
 
 
+@bp.route('/check/<course_id>', methods=['POST'])
+def course_check(course_id):
+    course = DBManager.get_course(course_id)
+    answers = json_loads(request.form['answers'])
+    result = []
+    if course:
+        for index, task in enumerate(course.tasks):
+            if task.task_type == 'test':
+                true_ans = [answer[0] for answer in task.check['test']['answers']]
+                user_ans = answers[index][1]
+                result.append(true_ans == user_ans)
+        return {'result': result}
+    else:
+        return f"Курс {course_id} не найден", 404
+
 @bp.route('/update/<course_id>', methods=['GET', 'POST'])
 def course_update(course_id):
     """
@@ -35,9 +48,6 @@ def course_update(course_id):
     """
     if request.method == 'GET':
         course = DBManager.get_course(course_id)
-        import logging
-        logger = logging.getLogger('root')
-        logger.error('/update/<course_id> ' + str(DBManager.get_course(course_id)._id))
         if course or request.args.get('new'):
             return render_template("course_create.html", course=course)
         else:
@@ -48,7 +58,7 @@ def course_update(course_id):
         #for i in range(0, int(request.form['tasks_count'])):
         #    task = dict(_id='_id'+ str(i), name=request.form['name_' + str(i)], condition=request.form['condition_' + str(i)], task_type=request.form['type_' + str(i)], check={'test':request.form['check_' + str(i)]})
         #    tasks.append(task)
-        obj = {'_id': course_id, 'name': request.form['course_name'], 'description': request.form['course_description']}
+        obj = {'_id': course_id, 'name': request.form['name'], 'description': request.form['description']}
         course = Course.from_object(obj)
         course.save()
         return redirect(f'/course/{course_id}')

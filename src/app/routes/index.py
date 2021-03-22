@@ -37,7 +37,7 @@ def user_update(user_id):
     if request.method == 'GET':
         user = DBManager.get_user(user_id)
         if user or request.args.get('new'):
-            return render_template("user_create.html", user=get_user(user_id))
+            return render_template("user_create.html", user=DBManager.get_user(user_id))
         else:
             return f"Пользователь {user_id} не найден", 404
     else:
