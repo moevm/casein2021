@@ -43,7 +43,7 @@ class Task(me.Document):
     _id = me.StringField(primary_key=True)
     name = me.StringField()
     condition = me.StringField()
-    task_type = me.IntField()
+    task_type = me.StringField(max_length=5)
     check = me.DictField() 
 
     @staticmethod
@@ -61,20 +61,26 @@ class Task(me.Document):
 
 class Course(me.Document):
     _id = me.StringField(primary_key=True)
-    name = me.StringField()
-    tasks = me.ListField(me.ReferenceField(Task))
-    users = me.ListField(me.ReferenceField(User))
+    name = me.StringField(default="")
+    description = me.StringField(default="")
+    tasks = me.ListField(me.ReferenceField(Task), default=[])
+    users = me.ListField(me.ReferenceField(User), default=[])
+    datetime = me.DateTimeField(default=datetime.datetime.utcnow())
     some_info = me.DictField() 
 
     @staticmethod
     def from_object(course_object):
-        for key in ('_id', 'name', 'tasks'):
+        course = DBManager.get_course(course_object['_id']) 
+        course_object['tasks'] = course.tasks if course else []
+        
+        for key in ('_id', 'name', 'tasks', 'description'):
             if key not in course_object:
                 raise NoRequiredField(f'Отсутствует необходимое поле курса: {key}')
 
         return Course(_id=course_object.get('_id'),
                 name=course_object.get('name'),
-                tasks=[Task.from_object(task).save() for task in course_object['tasks']])
+                tasks=course_object.get('tasks'),
+                description=course_object.get('description'))
 
 
 class Solution(me.Document):
@@ -85,6 +91,14 @@ class Solution(me.Document):
     datetime = me.DateTimeField(default=datetime.datetime.utcnow())
 
 
-def get_course(course_id): return Course.objects(_id=course_id).first()
+class DBManager:
+    
+    @staticmethod
+    def get_course(course_id):
+        return Course.objects(_id=course_id).first()
 
-def get_user(user_id): return User.objects(_id=user_id).first()
+    @staticmethod
+    def get_task(task_id): return Task.objects(_id=task_id).first()
+
+    @staticmethod
+    def get_user(user_id): return User.objects(_id=user_id).first()
