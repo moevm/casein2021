@@ -64,91 +64,12 @@
 
 {% block script %}
 <script>
-    var index = {{course.tasks | length}};
-    function add_new_task() {
-        var task_name = document.createElement("h4")
-        task_name.innerText = "Задание " + (index+1)
-        var input_name = document.createElement("input")
-        input_name.setAttribute('type', 'text')
-        input_name.setAttribute('name', 'name_'+ index)
-        input_name.setAttribute('id', 'name_'+ index)
-        input_name.setAttribute('required', 'required')
-        input_name.setAttribute('class', 'form-control')
-        var input_name_label = document.createElement("label")
-        input_name_label.setAttribute('for', 'name_'+ index)
-        input_name_label.setAttribute('class', 'form-label')
-        input_name_label.innerText = 'Название задания'
-
-        var input_name_div = document.createElement("div")
-        input_name_div.setAttribute('class', 'mb-3')
-        input_name_div.appendChild(input_name_label)
-        input_name_div.appendChild(input_name)
-        
-        var input_condition = document.createElement("input")
-        input_condition.setAttribute('type', 'text')
-        input_condition.setAttribute('name', 'condition_'+ index)
-        input_condition.setAttribute('id', 'condition_'+ index)
-        input_condition.setAttribute('required', 'required')
-        input_condition.setAttribute('class', 'form-control')
-        var input_condition_label = document.createElement("label")
-        input_condition_label.setAttribute('class', 'form-label')
-        input_condition_label.setAttribute('for', 'condition_'+ index)
-        input_condition_label.innerText = 'Условие'
-
-        var input_condition_div = document.createElement("div")
-        input_condition_div.setAttribute('class', 'mb-3')
-        input_condition_div.appendChild(input_condition_label)
-        input_condition_div.appendChild(input_condition)
-        
-        var input_type = document.createElement("input")
-        input_type.setAttribute('type', 'text')
-        input_type.setAttribute('name', 'type_'+ index)
-        input_type.setAttribute('id', 'type_'+ index)
-        input_type.setAttribute('required', 'required')
-        input_type.setAttribute('class', 'form-control')
-        var input_type_label = document.createElement("label")
-        input_type_label.setAttribute('for', 'type_'+ index)
-        input_type_label.setAttribute('class', 'form-label')
-        input_type_label.innerText = 'Тип задания'
-
-        var input_type_div = document.createElement("div")
-        input_type_div.setAttribute('class', 'mb-3')
-        input_type_div.appendChild(input_type_label)
-        input_type_div.appendChild(input_type)
-
-        var input_check = document.createElement("input")
-        input_check.setAttribute('type', 'text')
-        input_check.setAttribute('name', 'check_'+ index)
-        input_check.setAttribute('id', 'check_'+ index)
-        input_check.setAttribute('required', 'required')
-        input_check.setAttribute('class', 'form-control')
-        var input_check_label = document.createElement("label")
-        input_check_label.setAttribute('for', 'check_'+ index)
-        input_check_label.setAttribute('class', 'form-label')
-        input_check_label.innerText = 'Проверка'
-
-        var input_check_div = document.createElement("div")
-        input_check_div.setAttribute('class', 'mb-3')
-        input_check_div.appendChild(input_check_label)
-        input_check_div.appendChild(input_check)
-        
-        var new_task = document.createElement("div")
-        new_task.setAttribute('class', 'mb-3')
-        new_task.appendChild(task_name)
-        new_task.appendChild(input_name_div)
-        new_task.appendChild(input_condition_div)
-        new_task.appendChild(input_type_div)
-        new_task.appendChild(input_check_div)
-        index++;
-        document.getElementById("tasks").appendChild(new_task)
-    }
-
     var form = document.getElementById("create_course")
 
     form.setAttribute("action", "{{url_for('course.course_update', course_id=course._id)}}")
 
     form.onsubmit = function(event){
-        document.getElementById("tasks_count").value = index;       
+        //document.getElementById("tasks_count").value = index;       
     }
 </script>
 

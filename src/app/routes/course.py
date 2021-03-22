@@ -44,11 +44,11 @@ def course_update(course_id):
             return f"Курс {course_id} не найден", 404
     else:
         # пример словаря с клиента
-        tasks=[]
-        for i in range(0, int(request.form['tasks_count'])):
-            task = dict(_id='_id'+ str(i), name=request.form['name_' + str(i)], condition=request.form['condition_' + str(i)], task_type=request.form['type_' + str(i)], check={'test':request.form['check_' + str(i)]})
-            tasks.append(task)
-        obj = {'_id': course_id, 'name': request.form['course_name'], 'tasks': tasks}
+        #tasks=[]
+        #for i in range(0, int(request.form['tasks_count'])):
+        #    task = dict(_id='_id'+ str(i), name=request.form['name_' + str(i)], condition=request.form['condition_' + str(i)], task_type=request.form['type_' + str(i)], check={'test':request.form['check_' + str(i)]})
+        #    tasks.append(task)
+        obj = {'_id': course_id, 'name': request.form['course_name'], 'description': request.form['description']}
         course = Course.from_object(obj)
         course.save()
         return redirect(f'/course/{course_id}')
