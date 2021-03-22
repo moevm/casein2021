@@ -1,18 +1,39 @@
-from flask import Blueprint, render_template, request, redirect, render_template
-from app.db_models import User, get_user
-from random import randint
+from flask import Blueprint, render_template, request, redirect, render_template, current_app
+from flask_security import login_required, current_user, roles_required, LoginForm, url_for_security
 
+from app.db_models import User, Role, get_user, get_role
+
+from random import randint
 
 bp = Blueprint('index', __name__)
 
+@bp.before_app_first_request
+def init_my_blueprint():
+    if not current_app.user_datastore.get_user('user@example.com'):
+        current_app.user_datastore.create_user(email='user@example.com',
+                                       password='Password1', roles=[])
+    if not current_app.user_datastore.get_user('admin@example.com'):
+        current_app.user_datastore.create_role(name="admin")
+        current_app.user_datastore.create_user(email='admin@example.com',
+                                       password='Password1', roles=['admin'])
+    
+
+@bp.context_processor
+def login_context():
+    return {
+        'url_for_security': url_for_security,
+        'login_user_form': LoginForm(),
+    }
+
 
 @bp.route('/')
+@login_required
 def index():
-    User(_id='admin', password='1234', full_name='Admin Admin').save()
     return render_template("index.html")
 
 
 @bp.route('/users')
+@roles_required('admin')
 def users_page():
     return render_template("users.html", users=User.objects())
 

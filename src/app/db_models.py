@@ -15,10 +15,10 @@ class Role(me.Document, RoleMixin):
 
 
 class User(me.Document, UserMixin):
-    _id = me.StringField(primary_key=True)
     email = me.StringField(max_length=30)
-    password = me.StringField(max_length=30)
+    password = me.StringField(max_length=255)
     full_name = me.StringField(max_length=50)
+    active = me.BooleanField(default=True)
     confirmed_at = me.DateTimeField(default=datetime.datetime.utcnow())
     roles = me.ListField(me.ReferenceField(Role), default=[])
 
@@ -87,4 +87,6 @@ class Solution(me.Document):
 
 def get_course(course_id): return Course.objects(_id=course_id).first()
 
-def get_user(user_id): return User.objects(_id=user_id).first()
+def get_user(user_id): return User.objects(id=user_id).first()
+
+def get_role(role): return Role.objects(name=role).first()
