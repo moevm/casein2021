@@ -19,36 +19,40 @@
                     <h3>Задачи курса:</h3>
                     <input type="hidden" name="tasks_count" id="tasks_count" value="{{course.tasks | length}}">
                     <div id="tasks">
-                    {% if course.tasks %}
-                        <ul>
-                        {% for task in course.tasks %}
-                            <div class="mb-3">
-                                <li>
-                                <h5>{{task.name}}</h5>
-                                <!--
+                    <ul>
+                        {% if course.tasks %}
+                            {% for task in course.tasks %}
                                 <div class="mb-3">
-                                    <label for="name_{{loop.index0}}" class="form-label">Название задания</label>
-                                    <input type="text" name="name_{{loop.index0}}" id="name_{{loop.index0}}" value="{{task.name}}" class="form-control" required>
+                                    <li>
+                                    <h5>{{task.name}}</h5>
+                                    <!--
+                                    <div class="mb-3">
+                                        <label for="name_{{loop.index0}}" class="form-label">Название задания</label>
+                                        <input type="text" name="name_{{loop.index0}}" id="name_{{loop.index0}}" value="{{task.name}}" class="form-control" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="condition_{{loop.index0}}" class="form-label">Условие</label>
+                                        <input type="text" name="condition_{{loop.index0}}" id="condition_{{loop.index0}}" value="{{task.condition}}" class="form-control" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="type_{{loop.index0}}" class="form-label">Тип задания</label>
+                                        <input type="" name="type_{{loop.index0}}" id="type_{{loop.index0}}" value="{{task.task_type}}" class="form-control" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="check_{{loop.index0}}" class="form-label">Проверка</label>
+                                        <input type="text" name="check_{{loop.index0}}" id="check_{{loop.index0}}" value="{{task.check['test']}}" class="form-control" required>
+                                    </div>
+                                    -->
+                                    <a href="{{url_for('course.task_course_update', course_id=course._id, task_id=task._id)}}" target="_self">Редактировать задание</a>
+                                    </li>
                                 </div>
-                                <div class="mb-3">
-                                    <label for="condition_{{loop.index0}}" class="form-label">Условие</label>
-                                    <input type="text" name="condition_{{loop.index0}}" id="condition_{{loop.index0}}" value="{{task.condition}}" class="form-control" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="type_{{loop.index0}}" class="form-label">Тип задания</label>
-                                    <input type="" name="type_{{loop.index0}}" id="type_{{loop.index0}}" value="{{task.task_type}}" class="form-control" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="check_{{loop.index0}}" class="form-label">Проверка</label>
-                                    <input type="text" name="check_{{loop.index0}}" id="check_{{loop.index0}}" value="{{task.check['test']}}" class="form-control" required>
-                                </div>
-                                -->
-                                <a href="{{url_for('course.task_course_update', course_id=course._id, task_id=task._id)}}" target="_self">Редактировать задание</a>
-                                </li>
-                            </div>
-                        {% endfor %}
-                        </ul>
-                    {% endif %}
+                            {% endfor %}
+                        {% else %}
+                        <div class="mb-3">
+                            <label>В курсе пока нет задач</label>
+                        </div>
+                        {% endif %}
+                    </ul>
                 </div>
                 <input type="submit" value="Сохранить курс" class="btn btn-primary">
             </form>

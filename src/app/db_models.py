@@ -70,13 +70,17 @@ class Course(me.Document):
 
     @staticmethod
     def from_object(course_object):
-        for key in ('_id', 'name', 'tasks'):
+        course = DBManager.get_course(course_object['_id']) 
+        course_object['tasks'] = course.tasks if course else []
+        
+        for key in ('_id', 'name', 'tasks', 'description'):
             if key not in course_object:
                 raise NoRequiredField(f'Отсутствует необходимое поле курса: {key}')
 
         return Course(_id=course_object.get('_id'),
                 name=course_object.get('name'),
-                tasks=[Task.from_object(task).save() for task in course_object['tasks']])
+                tasks=course_object.get('tasks'),
+                description=course_object.get('description'))
 
 
 class Solution(me.Document):
