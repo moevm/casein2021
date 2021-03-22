@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block title %}Редактирование задачи{% endblock %}
+
+{% block content %}
+
+        <div id="task">
+            <form id="task_form">
+                <input type='text' id='name' name='name' value='{% if task %}{{task.name}}{% endif %}' required><br>
+                <textarea id='condition' name='condition' required>{% if task %}{{task.condition}}{% endif %}</textarea><br>
+                <select id="task_type" name="task_type">
+                    <option value='{{task_type}}'>{{task_type}}</option>
+                    <!-- <option value='file'>file</option>-->
+                    <!-- Изменять поля по изменению типа - плохая идея, поэтому страницы под каждый тип -->
+                </select><br>
+                {% if task_type == 'test'%}
+                    {% set test_type = (task and task.check['test']['test_type']) or 'radio' %}
+                    <select id="answer_type">
+                        <option value='radio' {% if test_type == 'radio' %}selected{% endif %} >Один ответ</option>
+                        <option value='checkbox' {% if test_type == 'checkbox' %}selected{% endif %} >Несколько ответов</option>
+                    </select><br>
+                    <button id="add_answer_button">Добавить ответ</button><br>
+                    <div id='task_check'>
+                        <ul id="task_check_list">
+                            {% if task and task.check['test']['answers'] %}
+                                {% for (answer, text) in task.check['test']['answers'] %}
+                                    <li><input type="{{test_type}}" name="answer" {% if answer %}checked{% endif %}>    <input type="text" value="{{text}}" required></li>
+                                {% endfor %}
+                            {% else %}
+                                <li><input type="radio" name="answer" required>    <input type="text" required></li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                {% endif %}
+                <button type="submit" id="save_task">Сохранить задание</button>
+            </form>
+        </div>
+
+{% endblock %}
+
+{% block script %}
+<script>
+    $(function() {
+        $("#add_answer_button").on('click', function (event) {
+            var clone = $("#task_check_list li:first").clone();
+            $("#task_check_list").append(clone);
+            event.preventDefault()
+        })
+        
+        $('#answer_type').on('change', function() {
+            $("#task_check_list li").each(function() {
+                var [btn, ans_text] = $(this).children()
+                btn.type = $('#answer_type').val()
+            })
+        });
+
+        $("#task_form").on('submit', function (event) {
+            $("#save_task").html("<span class='spinner-border spinner-border-sm'></span> Сохранение")
+            event.preventDefault()
+            var data = {
+					'name': $("#name").val(),
+                    'condition': $("#condition").val(),
+                    'task_type': $('#task_type').val(),
+					'check': JSON.stringify(
+                        {
+                            'answers': get_answers(),
+                            'test_type': $("#answer_type").val()
+                        })
+				}
+            console.log(data)
+                
+            $.ajax({
+				url: "{{url_for('course.task_course_update', course_id=course_id, task_id=task_id)}}",
+				type:'POST',
+				contenType: 'application/json',
+				data: data,
+				success: function(resp){
+                    window.location.href="{{url_for('course.course_update', course_id=course_id)}}"
+				},
+				error: function(resp){
+                    $("#save_task").html("Что-то пошло не так! Попробуйте позже")
+				},
+			});
+        })
+
+        function get_answers(){
+            var answers = []
+            $("#task_check_list li").each(function() {
+                var [radio_btn, ans_text] = $(this).children()
+                answers.push([radio_btn.checked, ans_text.value])
+            })
+            return answers
+        }
+    })
+</script>
+{% endblock %}
