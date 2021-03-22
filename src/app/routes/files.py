@@ -2,7 +2,7 @@ import os
 import sys
 from uuid import uuid4
 from flask import Blueprint, request, flash, redirect, url_for, render_template, current_app
-from app.db_models import File, get_file
+from app.db_models import File, DBManager
 from werkzeug.utils import secure_filename
 import logging
 
@@ -33,7 +33,7 @@ def upload_file():
 
 @bp.route('/remove/<file_id>', methods=['GET', 'POST'])
 def remove_file(file_id):
-    file = get_file(file_id)
+    file = DBManager.get_file(file_id)
     if file:
         if os.path.exists(os.path.join(UPLOAD_FOLDER,file.filename)):
             os.remove(os.path.join(UPLOAD_FOLDER,file.filename))
@@ -47,7 +47,7 @@ def update_file(file_id):
     POST - обновление файла
     """
     if request.method == 'POST':
-        existing = get_file(file_id)
+        existing = DBManager.get_file(file_id)
         
         logger.error(f'is existing: {existing}')
         logger.error(f'request.files: {request}')
@@ -79,7 +79,7 @@ def update_file(file_id):
             return redirect(url_for('files.files_list'))
 
     elif request.method == 'GET':
-        file = get_file(file_id)
+        file = DBManager.get_file(file_id)
         if file or request.args.get('new'):
             logger.error(f'GET, is existing: {file}')
             return render_template("upload_documents.html", file=file)
