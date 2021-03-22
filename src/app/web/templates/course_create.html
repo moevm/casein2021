@@ -1,7 +1,5 @@
 {% extends 'base.html' %}
 
-{% set is_editing = course is defined and course %}
-
 {% block title %}{% if is_editing %}Редактирование курса{% else %}Создание курса{% endif %}{% endblock %}
 
 {% block content %}
@@ -9,20 +7,25 @@
 <div class="container">
     <div class="row">
         <div class="col-10">
-            <h1>{% if is_editing %}Редактировать курс{% else %}Создать курс{% endif %}</h1>
+            <h1>{% if course.name %}Редактировать курс{% else %}Создать курс{% endif %}</h1>
 
             <form id="create_course" action="/update/" method="post">
                 <div class="mb-3">
                     <label for="course_name" class="form-label">Название курса</label>
-                    <input type="text" name="course_name" id="course_name" class="form-control" {% if is_editing %}value="{{course.name}}"{% endif %} required>
+                    <input type="text" name="course_name" id="course_name" class="form-control" {% if course.name %}value="{{course.name}}"{% endif %} required>
+                    <label for="course_description" class="form-label">Описание курса</label><br>
+                    <textarea name="course_description" required>{% if course.description %}{{course.description}}{% endif %}</textarea>
                 </div>
-                    <h3>Tasks:</h3>
-                    <input type="hidden" name="tasks_count" id="tasks_count" value="{% if is_editing %}{{course.tasks | length}}{% endif %}">
+                    <h3>Задачи курса:</h3>
+                    <input type="hidden" name="tasks_count" id="tasks_count" value="{{course.tasks | length}}">
                     <div id="tasks">
-                    {% if is_editing %}
+                    {% if course.tasks %}
+                        <ul>
                         {% for task in course.tasks %}
                             <div class="mb-3">
-                                <h4>Задание {{loop.index0+1}}</h4>
+                                <li>
+                                <h5>{{task.name}}</h5>
+                                <!--
                                 <div class="mb-3">
                                     <label for="name_{{loop.index0}}" class="form-label">Название задания</label>
                                     <input type="text" name="name_{{loop.index0}}" id="name_{{loop.index0}}" value="{{task.name}}" class="form-control" required>
@@ -39,9 +42,12 @@
                                     <label for="check_{{loop.index0}}" class="form-label">Проверка</label>
                                     <input type="text" name="check_{{loop.index0}}" id="check_{{loop.index0}}" value="{{task.check['test']}}" class="form-control" required>
                                 </div>
-                                <hr>
+                                -->
+                                <a href="{{url_for('course.task_course_update', course_id=course._id, task_id=task._id)}}" target="_self">Редактировать задание</a>
+                                </li>
                             </div>
                         {% endfor %}
+                        </ul>
                     {% endif %}
                 </div>
                 <input type="submit" value="Сохранить курс" class="btn btn-primary">
@@ -49,7 +55,7 @@
         </div>
         <div class="col-2">
             <div class="mt-5">
-                <button id="add_task" onclick="add_new_task()" class="btn btn-secondary">Добавить задание</button>
+                <button id="add_task" class="btn btn-secondary" onclick="window.location.href = '{{url_for('course.task_course_create', course_id=course._id)}}'" target="_self">Добавить задание</button>
             </div>
         </div>
     </div>
@@ -58,7 +64,7 @@
 
 {% block script %}
 <script>
-    var index = {% if is_editing %}{{course.tasks | length}}{% else %}0{% endif %};
+    var index = {{course.tasks | length}};
     function add_new_task() {
         var task_name = document.createElement("h4")
         task_name.innerText = "Задание " + (index+1)
@@ -139,8 +145,7 @@
 
     var form = document.getElementById("create_course")
 
-    var course_id = location.pathname.split('/')[3]
-    form.setAttribute("action", "/course/update/" + course_id)
+    form.setAttribute("action", "{{url_for('course.course_update', course_id=course._id)}}")
 
     form.onsubmit = function(event){
         document.getElementById("tasks_count").value = index;       

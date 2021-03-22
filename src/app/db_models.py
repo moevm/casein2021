@@ -43,7 +43,7 @@ class Task(me.Document):
     _id = me.StringField(primary_key=True)
     name = me.StringField()
     condition = me.StringField()
-    task_type = me.IntField()
+    task_type = me.StringField(max_length=5)
     check = me.DictField() 
 
     @staticmethod
@@ -61,9 +61,11 @@ class Task(me.Document):
 
 class Course(me.Document):
     _id = me.StringField(primary_key=True)
-    name = me.StringField()
-    tasks = me.ListField(me.ReferenceField(Task))
-    users = me.ListField(me.ReferenceField(User))
+    name = me.StringField(default="")
+    description = me.StringField(default="")
+    tasks = me.ListField(me.ReferenceField(Task), default=[])
+    users = me.ListField(me.ReferenceField(User), default=[])
+    datetime = me.DateTimeField(default=datetime.datetime.utcnow())
     some_info = me.DictField() 
 
     @staticmethod
@@ -85,6 +87,14 @@ class Solution(me.Document):
     datetime = me.DateTimeField(default=datetime.datetime.utcnow())
 
 
-def get_course(course_id): return Course.objects(_id=course_id).first()
+class DBManager:
+    
+    @staticmethod
+    def get_course(course_id):
+        return Course.objects(_id=course_id).first()
 
-def get_user(user_id): return User.objects(_id=user_id).first()
+    @staticmethod
+    def get_task(task_id): return Task.objects(_id=task_id).first()
+
+    @staticmethod
+    def get_user(user_id): return User.objects(_id=user_id).first()

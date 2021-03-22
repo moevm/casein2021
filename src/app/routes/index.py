@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, render_template
-from app.db_models import User, get_user
+from app.db_models import User, DBManager
 from random import randint
 
 
@@ -24,7 +24,7 @@ def user_create():
 
 @bp.route('/user/<user_id>')
 def user_page(user_id):
-    user = get_user(user_id)
+    user = DBManager.get_user(user_id)
     return render_template("user_id.html", user=user) if user else (f'Пользователь {user_id} не найден', 404)
 
 
@@ -35,7 +35,7 @@ def user_update(user_id):
     POST - обновление пользователя
     """
     if request.method == 'GET':
-        user = get_user(user_id)
+        user = DBManager.get_user(user_id)
         if user or request.args.get('new'):
             return render_template("user_create.html", user=get_user(user_id))
         else:
