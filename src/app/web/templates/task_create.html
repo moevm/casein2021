@@ -9,7 +9,7 @@
                 <input type='text' id='name' name='name' value='{% if task %}{{task.name}}{% endif %}' required><br>
                 <textarea id='condition' name='condition' required>{% if task %}{{task.condition}}{% endif %}</textarea><br>
                 <select id="task_type" name="task_type">
-                    <option value='{% if task %}{{task.task_type}}{% endif %}'>{% if task %}{{task.task_type}}{% endif %}</option>
+                    <option value='{{task_type}}'>{{task_type}}</option>
                     <!-- <option value='file'>file</option>-->
                     <!-- Изменять поля по изменению типа - плохая идея, поэтому страницы под каждый тип -->
                 </select><br>
@@ -43,7 +43,6 @@
     $(function() {
         $("#add_answer_button").on('click', function (event) {
             var clone = $("#task_check_list li:first").clone();
-            $(clone).children()[0].removeAttr('checked')
             $("#task_check_list").append(clone);
             event.preventDefault()
         })
