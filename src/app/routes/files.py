@@ -2,7 +2,7 @@ import os
 import sys
 from uuid import uuid4
 from flask import Blueprint, request, flash, redirect, url_for, render_template, current_app
-from app.db_models import File
+from app.db_models import File, get_file
 from werkzeug.utils import secure_filename
 import logging
 
@@ -85,6 +85,3 @@ def update_file(file_id):
             return render_template("upload_documents.html", file=file)
         else:
             return f"Файл {file_id} не найден", 404
-
-
-def get_file(file_id): return File.objects(_id=file_id).first()

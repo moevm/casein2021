@@ -22,6 +22,17 @@ class User(me.Document, UserMixin):
     confirmed_at = me.DateTimeField(default=datetime.datetime.utcnow())
     roles = me.ListField(me.ReferenceField(Role), default=[])
 
+    @staticmethod
+    def from_object(user_object):
+        for key in ('_id', 'email', 'password', 'full_name'):
+            if key not in user_object:
+                raise NoRequiredField(f'Отсутствует необходимое поле пользователя: {key}')
+
+        return User(_id=user_object.get('_id'),
+                email=user_object.get('email'),
+                password=user_object.get('password'),
+                full_name=user_object.get('full_name'))
+
 
 class AdapterEmployees(me.EmbeddedDocument):
     user = me.ReferenceField(User)
@@ -80,3 +91,7 @@ class File(me.Document):
     filename = me.StringField()
 
 def get_course(course_id): return Course.objects(_id=course_id).first()
+
+def get_user(user_id): return User.objects(_id=user_id).first()
+
+def get_file(file_id): return File.objects(_id=file_id).first()
