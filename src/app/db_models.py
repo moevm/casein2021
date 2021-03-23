@@ -15,10 +15,10 @@ class Role(me.Document, RoleMixin):
 
 
 class User(me.Document, UserMixin):
-    _id = me.StringField(primary_key=True)
     email = me.StringField(max_length=30)
-    password = me.StringField(max_length=30)
+    password = me.StringField(max_length=255)
     full_name = me.StringField(max_length=50)
+    active = me.BooleanField(default=True)
     confirmed_at = me.DateTimeField(default=datetime.datetime.utcnow())
     roles = me.ListField(me.ReferenceField(Role), default=[])
 
@@ -91,11 +91,21 @@ class Solution(me.Document):
     datetime = me.DateTimeField(default=datetime.datetime.utcnow())
 
 
+class File(me.Document):
+    _id = me.StringField(primary_key=True)
+    title = me.StringField()
+    filename = me.StringField()
+
+
 class DBManager:
     
     @staticmethod
     def get_course(course_id):
         return Course.objects(_id=course_id).first()
+
+    @staticmethod
+    def get_file(file_id):
+        return File.objects(_id=file_id).first()
 
     @staticmethod
     def get_task(task_id): return Task.objects(_id=task_id).first()
