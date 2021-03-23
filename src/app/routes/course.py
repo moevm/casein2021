@@ -32,11 +32,12 @@ def course_page(course_id):
 import logging
 logger = logging.getLogger('root')
 
+
 @bp.route('/check/<course_id>', methods=['POST'])
 @login_required
 def course_check(course_id):
     course = DBManager.get_course(course_id)
-    logger.error(f'user: {current_user}')
+    logger.error(f'user: {type(current_user._get_current_object())}')
     logger.error(f'course: {course}')
     answers = json_loads(request.form['answers'])
     result = []
@@ -50,28 +51,17 @@ def course_check(course_id):
                 res = (true_ans == user_ans)
                 result.append(res)
             logger.error(f'before solution')
-            solution = Solution(course=course, task=task, user=current_user, score=res * task.score)
+            
+            logger.error(f'user: {course}')
+            solution = Solution(course=course, task=task, user=current_user._get_current_object(), score=res * task.score)
             logger.error(f'solution {solution}')
             solution.save()
+            logger.error(f'solution task {type(solution.task)}')
             logger.error(f'solution saved')
         return {'result': result}
     else:
         return f"Курс {course_id} не найден", 404
 
-@bp.route('/check/<course_id>', methods=['POST'])
-def course_check(course_id):
-    course = DBManager.get_course(course_id)
-    answers = json_loads(request.form['answers'])
-    result = []
-    if course:
-        for index, task in enumerate(course.tasks):
-            if task.task_type == 'test':
-                true_ans = [answer[0] for answer in task.check['test']['answers']]
-                user_ans = answers[index][1]
-                result.append(true_ans == user_ans)
-        return {'result': result}
-    else:
-        return f"Курс {course_id} не найден", 404
 
 @bp.route('/update/<course_id>', methods=['GET', 'POST'])
 @login_required
