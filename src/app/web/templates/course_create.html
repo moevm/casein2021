@@ -8,13 +8,13 @@
     <div class="row">
         <div class="col-10">
             <h1>{% if course.name %}Редактировать курс{% else %}Создать курс{% endif %}</h1>
-
+            <a href="/course/{{ course._id }}">Открыть курс</a>
             <form id="create_course" action="/update/" method="post">
                 <div class="mb-3">
                     <label for="course_name" class="form-label">Название курса</label>
                     <input type="text" name="course_name" id="course_name" class="form-control" {% if course.name %}value="{{course.name}}"{% endif %} required>
                     <label for="course_description" class="form-label">Описание курса</label><br>
-                    <textarea name="course_description" required>{% if course.description %}{{course.description}}{% endif %}</textarea>
+                    <textarea name="course_description" id="course_description" required>{% if course.description %}{{course.description}}{% endif %}</textarea>
                 </div>
                     <h3>Задачи курса:</h3>
                     <input type="hidden" name="tasks_count" id="tasks_count" value="{{course.tasks | length}}">
@@ -54,7 +54,7 @@
                         {% endif %}
                     </ul>
                 </div>
-                <input type="submit" value="Сохранить курс" class="btn btn-primary">
+                <button id="save_course" type="submit" class="btn btn-primary">Сохранить курс</button>
             </form>
         </div>
         <div class="col-2">
@@ -68,13 +68,30 @@
 
 {% block script %}
 <script>
-    var form = document.getElementById("create_course")
-
-    form.setAttribute("action", "{{url_for('course.course_update', course_id=course._id)}}")
-
-    form.onsubmit = function(event){
-        //document.getElementById("tasks_count").value = index;       
-    }
+    $(function() {
+        $("#create_course").on('submit', function(event){
+            event.preventDefault()
+            $("#save_course").html("<span class='spinner-border spinner-border-sm'></span> Сохранение")
+            event.preventDefault()
+            var data = {
+                'name': $("#course_name").val(),
+                'description': $("#course_description").val()
+            }
+            
+            $.ajax({
+                url: "{{url_for('course.course_update', course_id=course._id)}}",
+                type:'POST',
+                contenType: 'application/json',
+                data: data,
+                success: function(resp){
+                    $("#save_course").html("Курс сохранён")
+                },
+                error: function(resp){
+                    $("#save_course").html("Что-то пошло не так! Попробуйте позже")
+                },
+            });
+        })
+    })
 </script>
 
 {% endblock %}

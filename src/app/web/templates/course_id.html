@@ -13,16 +13,69 @@
 
 {{course.description}}<br>
 
-<table cellspacing="2" border="1" cellpadding="5">
-    <tbody>
+<form id="course_tasks">
+    <hr>
     {% for task in course.tasks %}
-        <tr>
-            <td>{{task.name}}</td>
-            <td>{{task.condition}}</td>
-            <td>{{task.task_type}}</td>
-            <td>{{task.check['test']}}</td>
-        </tr>
+        <div>
+            {{task.name}}<br>
+            {{task.condition}}<br>
+            {% if task.task_type == 'test' %}
+                {% set test_type = (task and task.check['test']['test_type']) or 'radio' %}
+                <div id="{{task._id}}">
+                    <ul id="{{task._id}}">
+                        {% for (answer, text) in task.check['test']['answers'] %}
+                            <li><input name="{{task._id}}" type="{{test_type}}" {% if test_type == 'radio' %}required{% endif %}><span>    {{text}}</span></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+        </div>
+        <hr>
     {% endfor %}
-    </tbody>
-</table>
+    <button id="check_test" type="submit">Проверить</button>
+    <div id='check_result'></div>
+</form>
+{% endblock %}
+
+{% block script %}
+<script>
+    $(function() {
+        var tasks = [{% for task in course.tasks %}"{{task._id}}", {% endfor %}]
+        
+        $('#course_tasks').on('submit', function(event){
+            $("#check_test").html("<span class='spinner-border spinner-border-sm'></span> Проверка")
+            event.preventDefault()
+            var answers = []
+            for (i in tasks){
+                var task_id = tasks[i]
+                var task_answers = []
+                $(`#${task_id} li`).each(function() {
+                    var [radio_btn, ans_text] = $(this).children()
+                    task_answers.push(radio_btn.checked)
+                })
+                answers.push([task_id, task_answers])
+            }
+            console.log(JSON.stringify(answers))
+            $.ajax({
+				url: "{{url_for('course.course_check', course_id=course._id)}}",
+				type:'POST',
+                dataType: 'JSON',
+				contenType: 'application/json',
+				data: {
+                    'answers': JSON.stringify(answers)
+                },
+				success: function(resp){
+                    $("#check_test").html("Проверено")
+                    $("#check_result").html(`<pre>${resp['result']}</pre>`)
+                    console.log(resp)
+				},
+				error: function(resp){
+                    console.log(resp.responseText)
+                    $("#check_test").html("Что-то пошло не так! Попробуйте позже")
+				},
+			});
+        })
+    })
+        
+</script>
 {% endblock %}
