@@ -24,6 +24,8 @@
                     <input type='text' id='name' name='name' value='{% if task %}{{task.name}}{% endif %}' class="form-control" required>
                     <label for="condition" class="form-label mt-1">Описание задачи</label>
                     <textarea id='condition' name='condition' class="form-control" required>{% if task %}{{task.condition}}{% endif %}</textarea>
+                    <label for="score" class="form-label mt-1">Баллов</label>
+                    <input type='number' id='score' name='score' value='{% if task %}{{task.score}}{% endif %}' class="form-control" required>
                     <label for="task_type" class="form-label mt-1">Тип задачи</label>
                     <select id="task_type" name="task_type" class="form-select form-select-lg">
                         <option value='{{task_type}}'>{% if task_type == "test" %}Тестовый {% else %} {{ task_type }}{% endif %}</option>
@@ -88,6 +90,7 @@
             var data = {
 					'name': $("#name").val(),
                     'condition': $("#condition").val(),
+                    'score': $("#score").val(),
                     'task_type': $('#task_type').val(),
 					'check': JSON.stringify(
                         {

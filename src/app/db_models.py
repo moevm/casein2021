@@ -44,11 +44,12 @@ class Task(me.Document):
     name = me.StringField()
     condition = me.StringField()
     task_type = me.StringField(max_length=5)
+    score = me.IntField(default=1)
     check = me.DictField() 
 
     @staticmethod
     def from_object(task_object):
-        for key in ('_id', 'name', 'condition', 'task_type', 'check'):
+        for key in ('_id', 'name', 'condition', 'task_type', 'score', 'check'):
             if key not in task_object:
                 raise NoRequiredField(f'Отсутствует необходимое поля задания: {key}')
 
@@ -56,6 +57,7 @@ class Task(me.Document):
                 name=task_object.get('name'),
                 condition=task_object.get('condition'),
                 task_type=task_object.get('task_type'),
+                score=task_object.get('score'),
                 check=task_object.get('check'))
 
 
@@ -84,7 +86,7 @@ class Course(me.Document):
 
 
 class Solution(me.Document):
-    _id = me.StringField(primary_key=True)
+    course = me.ReferenceField(Course)
     task = me.ReferenceField(Task)
     user = me.ReferenceField(User)
     score = me.IntField(default=0)
@@ -102,6 +104,10 @@ class DBManager:
     @staticmethod
     def get_course(course_id):
         return Course.objects(_id=course_id).first()
+
+    @staticmethod
+    def get_solution(solution_id):
+        return Solution.objects(pk=solution_id).first()
 
     @staticmethod
     def get_file(file_id):
