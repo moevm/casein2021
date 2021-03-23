@@ -111,4 +111,4 @@ class DBManager:
     def get_task(task_id): return Task.objects(_id=task_id).first()
 
     @staticmethod
-    def get_user(user_id): return User.objects(_id=user_id).first()
+    def get_user(user_id): return User.objects(pk=user_id).first()
