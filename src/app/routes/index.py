@@ -10,13 +10,15 @@ bp = Blueprint('index', __name__)
 
 @bp.before_app_first_request
 def init_my_blueprint():
-    if not current_app.user_datastore.get_user('user@example.com'):
-        current_app.user_datastore.create_user(email='user@example.com',
-                                       password='Password1', roles=[])
-    if not current_app.user_datastore.get_user('admin@example.com'):
+    if not current_app.user_datastore.get_user('sotrudnik@rosatom.ru'):
+        current_app.user_datastore.create_role(name="user")
+        current_app.user_datastore.create_user(email='sotrudnik@rosatom.ru',password='sotrudnik', roles=['user'])
+    if not current_app.user_datastore.get_user('administrator@rosatom.ru'):
         current_app.user_datastore.create_role(name="admin")
-        current_app.user_datastore.create_user(email='admin@example.com',
-                                       password='Password1', roles=['admin'])
+        current_app.user_datastore.create_user(email='administrator@rosatom.ru', password='password', roles=['admin'])
+    if not current_app.user_datastore.get_user('adapter@rosatom.ru'):
+        current_app.user_datastore.create_role(name="adapter")
+        current_app.user_datastore.create_user(email='adapter@rosatom.ru',password='adapter', roles=['adapter'])
     
 
 @bp.context_processor
