@@ -1,7 +1,7 @@
 import os
 import sys
 from uuid import uuid4
-from flask import Blueprint, request, flash, redirect, url_for, render_template, current_app
+from flask import Blueprint, request, flash, redirect, url_for, render_template, current_app, send_from_directory
 from flask_security import login_required, current_user, roles_required
 from app.db_models import File, DBManager
 from werkzeug.utils import secure_filename
@@ -24,6 +24,11 @@ def create_upload_folder():
 @login_required
 def files_list():
     return render_template("files.html", files=File.objects)
+
+@bp.route('/<file_id>', methods=['GET', 'POST'])
+@login_required
+def get_file(file_id):
+    return send_from_directory(current_app.config['UPLOAD_FOLDER'], file_id)
 
 @bp.route('/upload', methods=['GET', 'POST'])
 @login_required
@@ -68,6 +73,8 @@ def update_file(file_id):
                 db_file.save()
                 file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
                 return redirect(url_for('files.files_list'))
+            else:
+                return 'Неразрешенное разрешение файла!'
         else: # update
             if 'file' in request.files:
                 file = request.files['file']
