@@ -25,7 +25,7 @@
                         <ul id="task_check_list">
                             {% if task and task.check['test']['answers'] %}
                                 {% for (answer, text) in task.check['test']['answers'] %}
-                                    <li><input type="{{test_type}}" name="answer" {% if answer %}checked{% endif %}>    <input type="text" value="{{text}}" required></li>
+                                    <li><input type="{{test_type}}" name="answer" {% if answer %}checked{% endif %}>    <input type="text" value="{{text}}" {% if test_type == 'radio' %}required{% endif %}></li>
                                 {% endfor %}
                             {% else %}
                                 <li><input type="radio" name="answer" required>    <input type="text" required></li>
@@ -69,7 +69,7 @@
                             'test_type': $("#answer_type").val()
                         })
 				}
-            console.log(data)
+
                 
             $.ajax({
 				url: "{{url_for('course.task_course_update', course_id=course_id, task_id=task_id)}}",
