@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block title %} Статистика по курсам {% endblock %}
+
+{% block content %}
+    <table border=1>
+        <tr>
+            <th></th>
+        {% for course in courses %}
+            <th>{{course}}</th>
+        {% endfor %}
+        </tr>
+        {% for row in table %}
+            <tr>
+            
+                <th>{{users[loop.index0]}}</th>
+                {% for column in row %}
+                    <td>
+                    {{column}}
+                    </td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    </table>
+
+{% endblock %}

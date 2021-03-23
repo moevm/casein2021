@@ -11,6 +11,7 @@ from app.db_models import User, Role
 from app.routes.index import bp as index_bp
 from app.routes.course import bp as course_bp
 from app.routes.files import bp as files_bp
+from app.routes.statistics import bp as statistic_bp
 
 import logging
 logger = logging.getLogger('root')
@@ -30,10 +31,14 @@ app.config['MONGODB_SETTINGS'] = {
 }
 app.config['SECRET_KEY'] = 'SECRET_KEY'
 app.config['SECURITY_PASSWORD_SALT'] = 'some arbitrary super secret string'
+app.config['TMP_FOLDER'] = 'app/web/documents/tmp/'
+app.config['UPLOAD_FOLDER'] = 'app/web/documents/upload'
+app.config['ALLOWED_EXTENSIONS'] = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'svg'}
 
 app.register_blueprint(index_bp)
 app.register_blueprint(course_bp)
 app.register_blueprint(files_bp)
+app.register_blueprint(statistic_bp)
 
 db = MongoEngine(app)
 
@@ -54,7 +59,7 @@ class AdminUserView(ModelView):
         return False
 
 
-admin = Admin(app, template_mode='bootstrap3')
+admin = Admin(app, template_mode='bootstrap4')
 admin.add_view(AdminUserView(User))
 admin.add_view(AdminUserView(Role))
 admin.add_link(MenuLink(name='Logout', endpoint='security.logout'))

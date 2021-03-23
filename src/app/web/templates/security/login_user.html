@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block content %}
+  <!-- {% from "security/_macros.html" import render_field_with_errors, render_field %} -->
+  <!-- {% include "security/_messages.html" %} -->
+  <!-- Test users: regular user - user@example.com / Password1, admin - admin@example.com / Password1 <br> -->
+
+<div class="container">
+    <div class="row">
+        <div class="col-lg-6 col-sm-12 mt-5 mx-auto">
+            <h4>
+                Авторизация
+            </h4>
+            <form class="form" action="{{ url_for_security('login') }}" method="POST" name="login_user_form">
+                {{ login_user_form.hidden_tag() }}
+                {{ render_field_with_errors(login_user_form.email, class_="form-control") }}
+                {{ render_field_with_errors(login_user_form.password, class_="form-control") }}
+                {{ render_field_with_errors(login_user_form.remember, class_="") }}
+                {{ render_field(login_user_form.next, class_="form-control") }}
+                {{ render_field(login_user_form.submit, class_="btn btn-primary", value="Войти") }}
+            </form>
+        </div>
+        <div class="col-lg-4 col-sm-12 mt-5">
+            <div class="row">
+                <h4>
+                    Демо-пользователи для различных ролей:
+                </h4>
+                <div class="d-grid gap-2 d-md-flex">
+                    <button type="button" class="btn btn-secondary" onclick='add(1)'>
+                        Сотрудник
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick='add(2)'>
+                        Админ
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick='add(3)'>
+                        Адаптер
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block script %}
+<script>
+    function add(type) {
+        if (type === 1){
+            $('input[name="email"]').val('sotrudnik@rosatom.ru')
+            $('input[name="password"]').val('sotrudnik')
+        }
+        else if (type === 2){
+            $('input[name="email"]').val('administrator@rosatom.ru')
+            $('input[name="password"]').val('password')
+        }
+        else if (type === 3){
+            $('input[name="email"]').val('adapter@rosatom.ru')
+            $('input[name="password"]').val('adapter')
+        }
+    }
+</script>
+{% endblock %}

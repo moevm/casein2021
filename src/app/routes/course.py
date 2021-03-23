@@ -17,36 +17,7 @@ logger = logging.getLogger('root')
 @bp.route('/')
 @login_required
 def course_index():
-    aggregation_users_course_stat = [
-        {"$group": {"_id":{"user":"$user", "course":"$course","task":"$task"}, "max":{"$max":"$score"}}}, 
-        {"$group": {"_id":{'user':"$_id.user", 'course':"$_id.course"}, 'sum':{'$sum':"$max"}}},
-        {'$replaceWith': {'user_id':"$_id.user", 'course_id':"$_id.course", 'score':"$sum"} },
-        {'$set': {'user_id': {'$function': {'body': 'function(i) { return i.toString() }', 'args': [ "$user_id" ], 'lang': "js"}}}}
-    ]
-    users_aggregate = [
-        {'$project': {'_id' : 1 , 'full_name' : 1}},
-        {'$set': {'_id': {'$function': { 'body': 'function(i) { return i.toString() }', 'args': [ "$_id" ], 'lang': "js"}}}}
-    ]
-    course_aggregate = [
-        {'$project': {'_id' : 1 , 'name' : 1}},
-    ]
-    solutions = Solution.objects.aggregate(aggregation_users_course_stat)
-    users = User.objects.aggregate(users_aggregate)
-    courses = Course.objects.aggregate(course_aggregate)
-    
-    solutions_df = pd.DataFrame(solutions)
-    users_df = pd.DataFrame(users).rename(columns={'_id':'user_id', 'full_name':'user_name'})
-    courses_df = pd.DataFrame(courses).rename(columns={'_id':'course_id', 'name':'course_name'})
-
-    solution_stat = solutions_df\
-        .merge(users_df, how='right', on='user_id')\
-        .merge(courses_df, how='right', on='course_id')\
-            [['score','user_name','course_name']]
-
-    solutoin_pivot = pd.pivot_table(solution_stat, 'score', 'user_name', 'course_name', fill_value=0)
-
-    logger.error(f'solutions: {solutoin_pivot.values}')
-    
+   
     return render_template("course.html", courses=Course.objects(name__ne=""))
 
 
