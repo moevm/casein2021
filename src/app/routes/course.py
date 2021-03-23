@@ -1,11 +1,17 @@
-from flask import Blueprint, request, redirect, url_for, render_template, flash
-from flask_security import login_required, current_user, roles_required
-from app.db_models import Course, Task, DBManager
+import pandas as pd
+
 from uuid import uuid4
 from json import loads as json_loads
 
+from app.db_models import Course, Task, User, Solution, DBManager
+from flask_security import login_required, current_user, roles_required
+from flask import Blueprint, request, redirect, url_for, render_template, flash
+
 
 bp = Blueprint('course', __name__, url_prefix='/course')
+
+import logging
+logger = logging.getLogger('root')
 
 
 @bp.route('/')
@@ -24,25 +30,33 @@ def course_create():
 
 
 @bp.route('/<course_id>')
+@login_required
 def course_page(course_id):
     course = DBManager.get_course(course_id)
     return render_template("course_id.html", course=course) if course else (f'Курс {course_id} не найден', 404)
 
 
+
 @bp.route('/check/<course_id>', methods=['POST'])
+@login_required
 def course_check(course_id):
     course = DBManager.get_course(course_id)
     answers = json_loads(request.form['answers'])
     result = []
     if course:
         for index, task in enumerate(course.tasks):
+            res = None
             if task.task_type == 'test':
                 true_ans = [answer[0] for answer in task.check['test']['answers']]
                 user_ans = answers[index][1]
-                result.append(true_ans == user_ans)
+                res = (true_ans == user_ans)
+                result.append(res)
+            solution = Solution(course=course, task=task, user=current_user._get_current_object(), score=res * task.score)
+            solution.save()
         return {'result': result}
     else:
         return f"Курс {course_id} не найден", 404
+
 
 @bp.route('/update/<course_id>', methods=['GET', 'POST'])
 @login_required
@@ -91,6 +105,8 @@ def task_course_update(course_id, task_id):
             return f"Задание {task} не найдено", 404
     else:
         task_info = request.form.to_dict()
+        # logger.error(task_info)
+        # logger.error(task_info.get('score'))
         task_info['_id'] = task_id
         if task_info['task_type'] == 'test':
             task_info['check'] = {'test': json_loads(task_info['check'])}
