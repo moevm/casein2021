@@ -26,7 +26,7 @@
                   </li>
                   {% if current_user.has_role('admin') %}
                   <li class="nav-item">
-                    <a class="nav-link" href="/admin">Админ-панель</a>
+                    <a class="nav-link" href="/admin" target="_blank">Админ-панель</a>
                   </li>
                   {% endif %}
                   {% if current_user.is_authenticated %}
@@ -38,8 +38,8 @@
                       Управление
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                      <li><a class="dropdown-item" href="/course">Курсы</a></li>
-                      <li><a class="dropdown-item" href="/users">Пользователи</a></li>
+                      <!--<li><a class="dropdown-item" href="/course">Курсы</a></li>
+                      <li><a class="dropdown-item" href="/users">Пользователи</a></li>-->
                       <li><a class="dropdown-item" href="/files">Файлы</a></li>
                       {% endif %}
                       <!--<li><hr class="dropdown-divider"></li>
