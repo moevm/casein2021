@@ -8,6 +8,7 @@
             <form id="task_form">
                 <input type='text' id='name' name='name' value='{% if task %}{{task.name}}{% endif %}' required><br>
                 <textarea id='condition' name='condition' required>{% if task %}{{task.condition}}{% endif %}</textarea><br>
+                <input type='number' id='score' name='score' value='{% if task %}{{task.score}}{% endif %}' required><br>
                 <select id="task_type" name="task_type">
                     <option value='{{task_type}}'>{{task_type}}</option>
                     <!-- <option value='file'>file</option>-->
@@ -60,6 +61,7 @@
             var data = {
 					'name': $("#name").val(),
                     'condition': $("#condition").val(),
+                    'score': $("#score").val(),
                     'task_type': $('#task_type').val(),
 					'check': JSON.stringify(
                         {

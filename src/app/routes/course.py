@@ -1,6 +1,6 @@
 from flask import Blueprint, request, redirect, url_for, render_template, flash
 from flask_security import login_required, current_user, roles_required
-from app.db_models import Course, Task, DBManager
+from app.db_models import Course, Task, Solution, DBManager
 from uuid import uuid4
 from json import loads as json_loads
 
@@ -26,10 +26,13 @@ def course_create():
 
 
 @bp.route('/<course_id>')
+@login_required
 def course_page(course_id):
     course = DBManager.get_course(course_id)
     return render_template("course_id.html", course=course) if course else (f'Курс {course_id} не найден', 404)
 
+import logging
+logger = logging.getLogger('root')
 
 @bp.route('/update/<course_id>', methods=['GET', 'POST'])
 @login_required
@@ -81,6 +84,8 @@ def task_course_update(course_id, task_id):
             return f"Задание {task} не найдено", 404
     else:
         task_info = request.form.to_dict()
+        logger.error(task_info)
+        logger.error(task_info.get('score'))
         task_info['_id'] = task_id
         if task_info['task_type'] == 'test':
             task_info['check'] = {'test': json_loads(task_info['check'])}
