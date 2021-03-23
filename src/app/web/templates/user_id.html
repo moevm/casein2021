@@ -1,28 +1,36 @@
 {% extends 'base.html' %}
 
-{% block title %}Пользователь {{user.name}}{% endblock %}
+{% block title %}Пользователь {% if user.full_name == 'None' %} без имени {% else %}{{ user.full_name }}{% endif %}{% endblock %}
 
 {% block content %}
 
 
 <div class="container">
-    <form>
-        <fieldset disabled>
-          <legend>Профиль пользователя</legend>
-          <div class="mb-3">
-            <label for="disabledTextInput1" class="form-label">Полное имя</label>
-            <input type="text" id="disabledTextInput1" class="form-control" placeholder="{{ user.full_name }}">
-          </div>
-          <div class="mb-3">
-            <label for="disabledTextInput2" class="form-label">E-mail</label>
-            <input type="email" id="disabledTextInput2" class="form-control" placeholder="{{ user.email }}">
-          </div>
-          <div class="mb-3">
-            <label for="disabledTextInput3" class="form-label">Пароль</label>
-            <input type="password" id="disabledTextInput3" class="form-control" placeholder="{{ user.password }}">
-          </div>
-        </fieldset>
-      </form>
+  <div class="row">
+    <div class="col-lg-4 col-sm-10 mx-auto">
+      <form>
+          <fieldset disabled>
+            <legend>Профиль пользователя</legend>
+            <div class="mb-3">
+              <label for="disabledTextInput1" class="form-label">Полное имя</label>
+              {% if user.full_name == 'None' %}
+              <input type="text" id="disabledTextInput1" class="form-control" placeholder="Не указано">
+              {% else %}
+              <input type="text" id="disabledTextInput1" class="form-control" placeholder="{{ user.full_name }}">
+              {% endif %}
+            </div>
+            <div class="mb-3">
+              <label for="disabledTextInput2" class="form-label">E-mail</label>
+              <input type="email" id="disabledTextInput2" class="form-control" placeholder="{{ user.email }}">
+            </div>
+            <div class="mb-3">
+              <label for="disabledTextInput3" class="form-label">Роль</label>
+              <input type="text" id="disabledTextInput3" class="form-control" placeholder="{{ user.roles[0] }}">
+            </div>
+          </fieldset>
+        </form>
+    </div>
+  </div>
 </div>
 
 
