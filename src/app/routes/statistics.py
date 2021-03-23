@@ -2,14 +2,14 @@ import pandas as pd
 import os
 from flask import Blueprint, current_app, send_from_directory, render_template
 from flask_security import login_required, roles_required
-from app.db_models import Course, Task, User, Solution
+from app.db_models import Course, Task, User, Solution, DBManager
 import logging
 
 logger = logging.getLogger('root')
 
 bp = Blueprint('statistics', __name__, url_prefix='/statistics')
 
-aggregation_users_course_stat = [
+users_course_aggregate = [
     {"$group": {"_id":{"user":"$user", "course":"$course","task":"$task"}, "max":{"$max":"$score"}}}, 
     {"$group": {"_id":{'user':"$_id.user", 'course':"$_id.course"}, 'sum':{'$sum':"$max"}}},
     {'$replaceWith': {'user_id':"$_id.user", 'course_id':"$_id.course", 'score':"$sum"} },
@@ -21,6 +21,15 @@ users_aggregate = [
 ]
 course_aggregate = [
     {'$project': {'_id' : 1 , 'name' : 1}},
+]
+
+course_score_aggregate = [
+    { '$project': { '_id':1, 'name': 1, 'tasks':1 } },
+    { '$unwind': "$tasks" }
+]
+
+tasks_score_aggregate = [
+    { '$project': { '_id':1, 'score': 1 } }
 ]
 
 @bp.before_app_first_request
@@ -42,8 +51,8 @@ def users_list():
 @bp.route('/courses', methods=['GET'])
 @login_required
 @roles_required('admin')
-def course_statistics():
-    solutions = Solution.objects.aggregate(aggregation_users_course_stat)
+def courses_statistics():
+    solutions = Solution.objects.aggregate(users_course_aggregate)
     users = User.objects.aggregate(users_aggregate)
     courses = Course.objects.aggregate(course_aggregate)
 
@@ -59,3 +68,24 @@ def course_statistics():
         table=solutoin_pivot.values, 
         users=solutoin_pivot.index.values.tolist(), 
         courses=list(solutoin_pivot))
+
+
+@bp.route('/course_score/<course_id>', methods=['GET'])
+@login_required
+def course_statistic(course_id):
+    courses = DBManager.get_course(course_id)
+    return str(sum(map(lambda x: x.score, courses.tasks)))
+
+
+@bp.route('/courses_score', methods=['GET'])
+@login_required
+def user_statistic():
+    courses = Course.objects.aggregate(course_score_aggregate)
+    tasks = Task.objects.aggregate(tasks_score_aggregate)
+    courses_df = pd.DataFrame(courses).rename(columns={'_id': 'course_id', 'tasks':'task_id'})
+    tasks_df = pd.DataFrame(tasks).rename(columns={'_id': 'task_id'})
+    
+    scores_df = tasks_df.merge(courses_df, how='inner', on='task_id')
+    res = scores_df.groupby('course_id').sum('score')
+        
+    return 'ok'

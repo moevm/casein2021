@@ -17,7 +17,6 @@ logger = logging.getLogger('root')
 @bp.route('/')
 @login_required
 def course_index():
-   
     return render_template("course.html", courses=Course.objects(name__ne=""))
 
 
