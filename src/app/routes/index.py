@@ -14,8 +14,8 @@ def init_my_blueprint():
         current_app.user_datastore.create_role(name="user")
         current_app.user_datastore.create_user(email='sotrudnik@rosatom.ru',password='sotrudnik', roles=['user'])
     if not current_app.user_datastore.get_user('administrator@rosatom.ru'):
-        #current_app.user_datastore.create_role(name="admin")
-        current_app.user_datastore.create_user(email='administrator@rosatom.ru', password='administrator', roles=['admin'])
+        current_app.user_datastore.create_role(name="admin")
+        current_app.user_datastore.create_user(email='administrator@rosatom.ru', password='password', roles=['admin'])
     if not current_app.user_datastore.get_user('adapter@rosatom.ru'):
         current_app.user_datastore.create_role(name="adapter")
         current_app.user_datastore.create_user(email='adapter@rosatom.ru',password='adapter', roles=['adapter'])
