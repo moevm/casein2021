@@ -26,7 +26,7 @@
                     <textarea id='condition' name='condition' class="form-control" required>{% if task %}{{task.condition}}{% endif %}</textarea>
                     <label for="task_type" class="form-label mt-1">Тип задачи</label>
                     <select id="task_type" name="task_type" class="form-select form-select-lg">
-                        <option value='{{task_type}}'>{{task_type}}</option>
+                        <option value='{{task_type}}'>{% if task_type == "test" %}Тестовый {% else %} {{ task_type }}{% endif %}</option>
                         <!-- <option value='file'>file</option>-->
                         <!-- Изменять поля по изменению типа - плохая идея, поэтому страницы под каждый тип -->
                     </select>
