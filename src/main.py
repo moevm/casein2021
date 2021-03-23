@@ -54,7 +54,7 @@ class AdminUserView(ModelView):
         return False
 
 
-admin = Admin(app, template_mode='bootstrap3')
+admin = Admin(app, template_mode='bootstrap4')
 admin.add_view(AdminUserView(User))
 admin.add_view(AdminUserView(Role))
 admin.add_link(MenuLink(name='Logout', endpoint='security.logout'))
