@@ -1,22 +1,29 @@
+from random import randint
+
+from app.db_models import User, Role, Solution, DBManager
 from flask import Blueprint, render_template, request, redirect, render_template, current_app
 from flask_security import login_required, current_user, roles_required, LoginForm, url_for_security
 
-from random import randint
-from app.db_models import User, Role, DBManager
-
-from random import randint
 
 bp = Blueprint('index', __name__)
 
 @bp.before_app_first_request
 def init_my_blueprint():
     if not current_app.user_datastore.get_user('user@example.com'):
-        current_app.user_datastore.create_user(email='user@example.com',
-                                       password='Password1', roles=[])
+        current_app.user_datastore.create_user(
+            email='user@example.com',
+            password='Password1',
+            full_name='user name',
+            roles=[]
+        )
     if not current_app.user_datastore.get_user('admin@example.com'):
         current_app.user_datastore.create_role(name="admin")
-        current_app.user_datastore.create_user(email='admin@example.com',
-                                       password='Password1', roles=['admin'])
+        current_app.user_datastore.create_user(
+            email='admin@example.com',
+            password='Password1',
+            full_name='admin name',
+            roles=['admin']
+        )
     
 
 @bp.context_processor
@@ -43,11 +50,21 @@ def users_page():
 def user_create():
     return redirect(f'/user/update/{randint(0,10*10)}?new=true')
 
+import logging
+
+logger = logging.getLogger('root')
 
 @bp.route('/user/<user_id>')
 @login_required
 def user_page(user_id):
     user = DBManager.get_user(user_id)
+    aggregation_user_course_stat = [
+        {'$match': {'user': user.pk}},
+        {'$group': {'_id':{'course':"$course",'task':"$task"}, 'max':{'$max':"$score"}}},
+        {'$group': {'_id':"$_id.course", 'sum':{'$sum':"$max"}}}
+    ]
+    res = Solution.objects.aggregate(aggregation_user_course_stat)
+    logger.error(f'res: {list(res)}')
     return render_template("user_id.html", user=user) if user else (f'Пользователь {user_id} не найден', 404)
 
 

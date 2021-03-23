@@ -86,25 +86,12 @@ class Course(me.Document):
 
 
 class Solution(me.Document):
-    # _id = me.StringField(primary_key=True)
     course = me.ReferenceField(Course)
     task = me.ReferenceField(Task)
     user = me.ReferenceField(User)
     score = me.IntField(default=0)
     datetime = me.DateTimeField(default=datetime.datetime.utcnow())
 
-    # @staticmethod
-    # def from_object(solution_object):
-    #     for key in ('course', 'task', 'task_type', 'score', 'check'):
-    #         if key not in solution_object:
-    #             raise NoRequiredField(f'Отсутствует необходимое поля задания: {key}')
-
-    #     return Solution(
-    #             name=task_object.get('name'),
-    #             condition=task_object.get('condition'),
-    #             task_type=task_object.get('task_type'),
-    #             score=task_object.get('score'),
-    #             check=task_object.get('check'))
 
 class File(me.Document):
     _id = me.StringField(primary_key=True)
@@ -120,7 +107,7 @@ class DBManager:
 
     @staticmethod
     def get_solution(solution_id):
-        return Solution.objects(_id=solution_id).first()
+        return Solution.objects(pk=solution_id).first()
 
     @staticmethod
     def get_file(file_id):
@@ -130,4 +117,4 @@ class DBManager:
     def get_task(task_id): return Task.objects(_id=task_id).first()
 
     @staticmethod
-    def get_user(user_id): return User.objects(_id=user_id).first()
+    def get_user(user_id): return User.objects(pk=user_id).first()

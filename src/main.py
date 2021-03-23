@@ -46,7 +46,7 @@ def is_hidden_field_filter(field):
 
 class AdminUserView(ModelView):
     column_exclude_list = ('password')
-    form_overrides = dict(password=HiddenField)
+    # form_overrides = dict(password=HiddenField)
 
     def is_accessible(self):
         if current_user.is_authenticated and Role.objects(name='admin').first() in current_user.roles:

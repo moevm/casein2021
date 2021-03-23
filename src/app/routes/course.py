@@ -1,16 +1,52 @@
-from flask import Blueprint, request, redirect, url_for, render_template, flash
-from flask_security import login_required, current_user, roles_required
-from app.db_models import Course, Task, Solution, DBManager
+import pandas as pd
+
 from uuid import uuid4
 from json import loads as json_loads
 
+from app.db_models import Course, Task, User, Solution, DBManager
+from flask_security import login_required, current_user, roles_required
+from flask import Blueprint, request, redirect, url_for, render_template, flash
+
 
 bp = Blueprint('course', __name__, url_prefix='/course')
+
+import logging
+logger = logging.getLogger('root')
 
 
 @bp.route('/')
 @login_required
 def course_index():
+    aggregation_users_course_stat = [
+        {"$group": {"_id":{"user":"$user", "course":"$course","task":"$task"}, "max":{"$max":"$score"}}}, 
+        {"$group": {"_id":{'user':"$_id.user", 'course':"$_id.course"}, 'sum':{'$sum':"$max"}}},
+        {'$replaceWith': {'user_id':"$_id.user", 'course_id':"$_id.course", 'score':"$sum"} },
+        {'$set': {'user_id': {'$function': {'body': 'function(i) { return i.toString() }', 'args': [ "$user_id" ], 'lang': "js"}}}}
+    ]
+    users_aggregate = [
+        {'$project': {'_id' : 1 , 'full_name' : 1}},
+        {'$set': {'_id': {'$function': { 'body': 'function(i) { return i.toString() }', 'args': [ "$_id" ], 'lang': "js"}}}}
+    ]
+    course_aggregate = [
+        {'$project': {'_id' : 1 , 'name' : 1}},
+    ]
+    solutions = Solution.objects.aggregate(aggregation_users_course_stat)
+    users = User.objects.aggregate(users_aggregate)
+    courses = Course.objects.aggregate(course_aggregate)
+    
+    solutions_df = pd.DataFrame(solutions)
+    users_df = pd.DataFrame(users).rename(columns={'_id':'user_id', 'full_name':'user_name'})
+    courses_df = pd.DataFrame(courses).rename(columns={'_id':'course_id', 'name':'course_name'})
+
+    solution_stat = solutions_df\
+        .merge(users_df, how='right', on='user_id')\
+        .merge(courses_df, how='right', on='course_id')\
+            [['score','user_name','course_name']]
+
+    solutoin_pivot = pd.pivot_table(solution_stat, 'score', 'user_name', 'course_name', fill_value=0)
+
+    logger.error(f'solutions: {solutoin_pivot.values}')
+    
     return render_template("course.html", courses=Course.objects(name__ne=""))
 
 
@@ -29,35 +65,24 @@ def course_page(course_id):
     course = DBManager.get_course(course_id)
     return render_template("course_id.html", course=course) if course else (f'Курс {course_id} не найден', 404)
 
-import logging
-logger = logging.getLogger('root')
 
 
 @bp.route('/check/<course_id>', methods=['POST'])
 @login_required
 def course_check(course_id):
     course = DBManager.get_course(course_id)
-    logger.error(f'user: {type(current_user._get_current_object())}')
-    logger.error(f'course: {course}')
     answers = json_loads(request.form['answers'])
     result = []
     if course:
         for index, task in enumerate(course.tasks):
-            logger.error(f'course tasks: ({index}){task}')
             res = None
             if task.task_type == 'test':
                 true_ans = [answer[0] for answer in task.check['test']['answers']]
                 user_ans = answers[index][1]
                 res = (true_ans == user_ans)
                 result.append(res)
-            logger.error(f'before solution')
-            
-            logger.error(f'user: {course}')
             solution = Solution(course=course, task=task, user=current_user._get_current_object(), score=res * task.score)
-            logger.error(f'solution {solution}')
             solution.save()
-            logger.error(f'solution task {type(solution.task)}')
-            logger.error(f'solution saved')
         return {'result': result}
     else:
         return f"Курс {course_id} не найден", 404
@@ -110,8 +135,8 @@ def task_course_update(course_id, task_id):
             return f"Задание {task} не найдено", 404
     else:
         task_info = request.form.to_dict()
-        logger.error(task_info)
-        logger.error(task_info.get('score'))
+        # logger.error(task_info)
+        # logger.error(task_info.get('score'))
         task_info['_id'] = task_id
         if task_info['task_type'] == 'test':
             task_info['check'] = {'test': json_loads(task_info['check'])}
