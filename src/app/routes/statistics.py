@@ -72,7 +72,7 @@ def courses_statistics():
 
 @bp.route('/course_score/<course_id>', methods=['GET'])
 @login_required
-def course_statistic(course_id):
+def course_score(course_id):
     courses = DBManager.get_course(course_id)
     return str(sum(map(lambda x: x.score, courses.tasks)))
 
