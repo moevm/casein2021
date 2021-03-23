@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% set is_editing = file is defined and file %}
+
+{% block title %}{% if is_editing %}Редактирование докумета{% else %}Добавление документа{% endif %}{% endblock %}
+
+{% block content %}
+
+<div>
+    <h1>{% if is_editing %}Редактировать документ{% else %}Создать документ{% endif %}</h1>
+    
+    <form id="create_document" method="post" enctype='multipart/form-data'>
+        <input type=text name=title {% if is_editing %}value="{{file.title}}"{% endif %} required>
+        <br><br>
+        <input type=file name=file>
+        <br><br>
+        <input type="submit" value="Save">
+    </form>
+
+    {% if is_editing %}
+        <canvas id="the-canvas" style='border: 1px solid black;direction: ltr;'>
+        </canvas>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% if is_editing %}
+    {% block script %}
+        <script src="static/js/pdf.min.js" ></script>
+        <script>
+      
+        let url = "{{ url_for('static', filename='documents/')}}{{file.filename}}"
+        
+        
+        console.log('url:', url)
+
+        pdfjsLib.GlobalWorkerOptions.workerSrc =
+            'static/js/pdf.worker.min.js';
+
+        
+        var loadingTask = pdfjsLib.getDocument(url);
+        loadingTask.promise.then(function(pdf) {
+            console.log('file:', pdf)
+            //
+            // Fetch the first page
+            //
+            pdf.getPage(1).then(function(page) {
+            var scale = 1.5;
+            var viewport = page.getViewport({ scale: scale, });
+
+            //
+            // Prepare canvas using PDF page dimensions
+            //
+            var canvas = document.getElementById('the-canvas');
+            var context = canvas.getContext('2d');
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+
+            //
+            // Render PDF page into canvas context
+            //
+            var renderContext = {
+                canvasContext: context,
+                viewport: viewport,
+            };
+            page.render(renderContext);
+            });
+        });
+        </script>
+    {% endblock %}
+{% endif %}

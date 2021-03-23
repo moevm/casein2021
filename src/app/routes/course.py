@@ -1,4 +1,5 @@
-from flask import Blueprint, request, redirect, url_for, render_template
+from flask import Blueprint, request, redirect, url_for, render_template, flash
+from flask_security import login_required, current_user, roles_required
 from app.db_models import Course, Task, DBManager
 from uuid import uuid4
 from json import loads as json_loads
@@ -8,11 +9,14 @@ bp = Blueprint('course', __name__, url_prefix='/course')
 
 
 @bp.route('/')
+@login_required
 def course_index():
     return render_template("course.html", courses=Course.objects(name__ne=""))
 
 
 @bp.route('/create')
+@login_required
+@roles_required('admin')
 def course_create():
     new_course = Course(_id=str(uuid4()))
     new_course.save()
@@ -41,6 +45,8 @@ def course_check(course_id):
         return f"Курс {course_id} не найден", 404
 
 @bp.route('/update/<course_id>', methods=['GET', 'POST'])
+@login_required
+@roles_required('admin')
 def course_update(course_id):
     """
     GET - страница редактирования курса (== страница создания курса с заполненными полями)
@@ -65,11 +71,15 @@ def course_update(course_id):
 
 
 @bp.route('/update/<course_id>/task/create', methods=['GET'])
+@login_required
+@roles_required('admin')
 def task_course_create(course_id):
     return redirect(url_for('course.task_course_update', course_id=course_id, task_id=uuid4(), new=True))
 
 
 @bp.route('/update/<course_id>/task/<task_id>', methods=['GET', 'POST'])
+@login_required
+@roles_required('admin')
 def task_course_update(course_id, task_id):
     if request.method == 'GET':
         if not DBManager.get_course(course_id):

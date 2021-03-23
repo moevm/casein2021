@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}Файлы{% endblock %}
+
+{% block content %}
+
+<div>
+    <a href="/files/upload">Добавить файл</a>
+</div>
+
+{% if files is defined %}
+    <ul>
+    {% for file in files %}
+    <li>
+        <a href='/files/update/{{file._id}}'>{{file.title}}</a>; 
+        <a href='/files/remove/{{file._id}}'>remove</a> 
+        <a href="{{ url_for('static', filename='documents/')}}{{file.filename}}"> show </a><br>
+    </li>
+    {% endfor %}
+    </ul>
+{% endif%}
+
+{% endblock %}
