@@ -4,37 +4,53 @@
 
 {% block content %}
 
-<div>
-    <a href="/course">Все курсы</a>
-    <a href="/course/update/{{ course._id }}">Редактировать курс</a>
+<div class="bg-holder d-none d-sm-block"
+    style="background-image:url(static/img/hero-bg.png);background-position:right top;background-size:contain;">
+</div>
+<!--/.bg-holder-->
+
+<div class="bg-holder d-sm-none"
+    style="background-image:url(static/img/hero-bg.png);background-position:right top;background-size:contain;">
 </div>
 
-<h2>{{course.name}}</h2>
 
-{{course.description}}<br>
-
-<form id="course_tasks">
-    <hr>
-    {% for task in course.tasks %}
-        <div>
-            {{task.name}}<br>
-            {{task.condition}}<br>
-            {% if task.task_type == 'test' %}
-                {% set test_type = (task and task.check['test']['test_type']) or 'radio' %}
-                <div id="{{task._id}}">
-                    <ul id="{{task._id}}">
-                        {% for (answer, text) in task.check['test']['answers'] %}
-                            <li><input name="{{task._id}}" type="{{test_type}}" {% if test_type == 'radio' %}required{% endif %}><span>    {{text}}</span></li>
-                        {% endfor %}
-                    </ul>
-                </div>
+<div class="container">
+    <div class="row justify-content-center align-items-center min-vh-75 min-vh-md-100">
+        <div class="col-md-12 col-lg-6 py-6 text-sm-start text-center">
+            <h3 class="mt-6 mb-sm-4 display-2 fw-semi-bold lh-sm fs-4 fs-lg-6 fs-xxl-8">{{course.name}}</h3>
+            <p class="mb-4 fs-1">{{course.description}}</p>
+            {% if current_user.has_role('admin') %}
+            <div class="mt-5 mb-5 mx-auto" style="width: 150px">
+                <a href="/course/update/{{ course._id }}" class="btn btn-secondary bg-gradient order-0">Редактировать</a>
+            </div>
             {% endif %}
+            <p>Список задач</p>
+            <form id="course_tasks">
+                <hr>
+                {% for task in course.tasks %}
+                    <div>
+                        <p>{{task.name}}</p>
+                        <p>{{task.condition}}</p> 
+                        {% if task.task_type == 'test' %}
+                            {% set test_type = (task and task.check['test']['test_type']) or 'radio' %}
+                            <div id="{{task._id}}">
+                                <ul id="{{task._id}}" class="list-group">
+                                    {% for (answer, text) in task.check['test']['answers'] %}
+                                        <li style="list-style-type: none;"><input name="{{task._id}}" type="{{test_type}}" {% if test_type == 'radio' %}required{% endif %}><span>    {{text}}</span></li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <hr>
+                {% endfor %}
+                <button id="check_test" type="submit" class="btn btn-primary">Проверить</button>
+                <div id='check_result'></div>
+            </form>
         </div>
-        <hr>
-    {% endfor %}
-    <button id="check_test" type="submit">Проверить</button>
-    <div id='check_result'></div>
-</form>
+    </div>
+</div>
+
 {% endblock %}
 
 {% block script %}
