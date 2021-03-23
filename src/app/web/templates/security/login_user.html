@@ -4,39 +4,39 @@
   <!-- {% include "security/_messages.html" %} -->
   <!-- Test users: regular user - user@example.com / Password1, admin - admin@example.com / Password1 <br> -->
 
+  <div class="bg-holder d-none d-sm-block" style="background-image:url(static/img/hero-bg.png);background-position:right top;background-size:contain;">
+  </div>
+  <!--/.bg-holder-->
+
+  <div class="bg-holder d-sm-none" style="background-image:url(static/img/hero-bg.png);background-position:right top;background-size:contain;">
+  </div>
+  <!--/.bg-holder-->  
 <div class="container">
-    <div class="row">
-        <div class="col-lg-6 col-sm-12 mt-5 mx-auto">
-            <h4>
-                Авторизация
-            </h4>
-            <form class="form" action="{{ url_for_security('login') }}" method="POST" name="login_user_form">
-                {{ login_user_form.hidden_tag() }}
-                {{ render_field_with_errors(login_user_form.email, class_="form-control") }}
-                {{ render_field_with_errors(login_user_form.password, class_="form-control") }}
-                {{ render_field_with_errors(login_user_form.remember, class_="") }}
-                {{ render_field(login_user_form.next, class_="form-control") }}
-                {{ render_field(login_user_form.submit, class_="btn btn-primary", value="Войти") }}
-            </form>
+    <div class="row justify-content-center align-items-center min-vh-75 min-vh-md-100">
+      <div class="col-md-7 col-lg-6 py-6 text-sm-start text-center">
+        <h3 class="mt-6 mb-sm-4 display-2 fw-semi-bold lh-sm fs-4 fs-lg-6 fs-xxl-8">Авторизация</h3>
+        <p class="mb-4 fs-1">Для получения данных для входа следует обратиться к своему адаптеру</p>
+        <form class="form" action="{{ url_for_security('login') }}" method="POST" name="login_user_form">
+            {{ login_user_form.hidden_tag() }}
+            {{ render_field_with_errors(login_user_form.email, class_="form-control") }}
+            {{ render_field_with_errors(login_user_form.password, class_="form-control") }}
+            {{ render_field_with_errors(login_user_form.remember, class_="") }}
+            {{ render_field(login_user_form.next, class_="form-control") }}
+            {{ render_field(login_user_form.submit, class_="btn btn-primary", value="Войти") }}
+        </form>
+        <p class="mb-4 fs-1">Или попробуйте зайти под заранее подготовленным данными пользователей разных ролей</p>
+        <div class="d-grid gap-2 d-md-flex">
+            <button type="button" class="btn btn-lg btn-primary bg-gradient order-0" onclick='add(1)'>
+                Сотрудник
+            </button>
+            <button type="button" class="btn btn-lg btn-primary bg-gradient order-0" onclick='add(2)'>
+                Админ
+            </button>
+            <button type="button" class="btn btn-lg btn-primary bg-gradient order-0" onclick='add(3)'>
+                Адаптер
+            </button>
         </div>
-        <div class="col-lg-4 col-sm-12 mt-5">
-            <div class="row">
-                <h4>
-                    Демо-пользователи для различных ролей:
-                </h4>
-                <div class="d-grid gap-2 d-md-flex">
-                    <button type="button" class="btn btn-secondary" onclick='add(1)'>
-                        Сотрудник
-                    </button>
-                    <button type="button" class="btn btn-secondary" onclick='add(2)'>
-                        Админ
-                    </button>
-                    <button type="button" class="btn btn-secondary" onclick='add(3)'>
-                        Адаптер
-                    </button>
-                </div>
-            </div>
-        </div>
+      </div>
     </div>
 </div>
 

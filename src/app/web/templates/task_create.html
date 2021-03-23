@@ -4,38 +4,67 @@
 
 {% block content %}
 
-        <div id="task">
-            <form id="task_form">
-                <input type='text' id='name' name='name' value='{% if task %}{{task.name}}{% endif %}' required><br>
-                <textarea id='condition' name='condition' required>{% if task %}{{task.condition}}{% endif %}</textarea><br>
-                <input type='number' id='score' name='score' value='{% if task %}{{task.score}}{% endif %}' required><br>
-                <select id="task_type" name="task_type">
-                    <option value='{{task_type}}'>{{task_type}}</option>
-                    <!-- <option value='file'>file</option>-->
-                    <!-- Изменять поля по изменению типа - плохая идея, поэтому страницы под каждый тип -->
-                </select><br>
-                {% if task_type == 'test'%}
-                    {% set test_type = (task and task.check['test']['test_type']) or 'radio' %}
-                    <select id="answer_type">
-                        <option value='radio' {% if test_type == 'radio' %}selected{% endif %} >Один ответ</option>
-                        <option value='checkbox' {% if test_type == 'checkbox' %}selected{% endif %} >Несколько ответов</option>
-                    </select><br>
-                    <button id="add_answer_button">Добавить ответ</button><br>
-                    <div id='task_check'>
-                        <ul id="task_check_list">
-                            {% if task and task.check['test']['answers'] %}
-                                {% for (answer, text) in task.check['test']['answers'] %}
-                                    <li><input type="{{test_type}}" name="answer" {% if answer %}checked{% endif %}>    <input type="text" value="{{text}}" {% if test_type == 'radio' %}required{% endif %}></li>
-                                {% endfor %}
-                            {% else %}
-                                <li><input type="radio" name="answer" required>    <input type="text" required></li>
-                            {% endif %}
-                        </ul>
-                    </div>
-                {% endif %}
-                <button type="submit" id="save_task">Сохранить задание</button>
-            </form>
+<div class="bg-holder d-none d-sm-block"
+    style="background-image:url(static/img/hero-bg.png);background-position:right top;background-size:contain;">
+</div>
+<!--/.bg-holder-->
+
+<div class="bg-holder d-none d-sm-block"
+    style="background-image:url(static/img/hero-bg.png);background-position:right top;background-size:contain;">
+</div>
+<!--/.bg-holder-->
+
+<div class="container">
+    <div class="row justify-content-center align-items-center min-vh-75 min-vh-md-100">
+        <div class="col-md-10 col-lg-6 py-6 text-sm-start text-center">
+            <h3 class="mt-6 mb-sm-4 display-2 fw-semi-bold lh-sm fs-4 fs-lg-6 fs-xxl-8">Редактирование задачи</h3>    
+            <div id="task">
+                <form id="task_form">
+                    <label for="name" class="form-label">Название задачи</label>
+                    <input type='text' id='name' name='name' value='{% if task %}{{task.name}}{% endif %}' class="form-control" required>
+                    <label for="condition" class="form-label mt-1">Описание задачи</label>
+                    <textarea id='condition' name='condition' class="form-control" required>{% if task %}{{task.condition}}{% endif %}</textarea>
+                    <label for="score" class="form-label mt-1">Баллов</label>
+                    <input type='number' id='score' name='score' value='{% if task %}{{task.score}}{% endif %}' class="form-control" required>
+                    <label for="task_type" class="form-label mt-1">Тип задачи</label>
+                    <select id="task_type" name="task_type" class="form-select form-select-lg">
+                        <option value='{{task_type}}'>{% if task_type == "test" %}Тестовый {% else %} {{ task_type }}{% endif %}</option>
+                        <!-- <option value='file'>file</option>-->
+                        <!-- Изменять поля по изменению типа - плохая идея, поэтому страницы под каждый тип -->
+                    </select>
+                    <label for="answer_type" class="form-label mt-1">Число верных ответов в задаче</label>
+                    {% if task_type == 'test'%}
+                        {% set test_type = (task and task.check['test']['test_type']) or 'radio' %}
+                        <select id="answer_type" class="form-select">
+                            <option value='radio' {% if test_type == 'radio' %}selected{% endif %}>Один ответ</option>
+                            <option value='checkbox' {% if test_type == 'checkbox' %}selected{% endif %}>Несколько ответов</option>
+                        </select>
+                        <div class="mt-2 mb-2"><button id="add_answer_button" class="btn btn-secondary btn-sm">Добавить ответ</button></div>
+                        <div id='task_check'>
+                            <ul id="task_check_list" class="list-group">
+                                {% if task and task.check['test']['answers'] %}
+                                    {% for (answer, text) in task.check['test']['answers'] %}
+                                        <li style="list-style-type: none;" class="d-flex justify-content-start mb-2">
+                                                    <input class="form-check-input mt-3 me-2" type="{{test_type}}" name="answer" {% if answer %}checked{% endif %}>    
+                                                    <input type="text" class="form-control" value="{{text}}" {% if test_type == 'radio' %}required{% endif %}>
+                                                </li>
+                                    {% endfor %}
+                                {% else %}
+                                <li style="list-style-type: none;" class="d-flex justify-content-start mb-2">
+                                            <input class="form-check-input mt-3 me-2" type="radio" name="answer" required>
+                                            <input class="form-control" type="text" required>
+                                        </li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    {% endif %}
+                    <div class="mt-3"><button type="submit" id="save_task" class="btn btn-primary">Сохранить задание</button></div>
+                </form>
+            </div>
         </div>
+    </div>
+</div>
+
 
 {% endblock %}
 

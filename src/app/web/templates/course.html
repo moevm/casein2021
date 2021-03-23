@@ -4,38 +4,53 @@
 
 {% block content %}
 
+<div class="bg-holder d-none d-sm-block"
+    style="background-image:url(static/img/hero-bg.png);background-position:right top;background-size:contain;">
+</div>
+<!--/.bg-holder-->
 
-<div class="container">
-    <div class="row">
-        <div class="mt-5 mb-5 mx-auto" style="width: 150px">
-            <a href="/course/create" class="btn btn-primary">Создать новый курс</a>
-        </div>
-    </div>
-{% if courses is defined %}
-    {% for course_row in courses | batch(3, '&nbsp;') %}
-        <div class="row mb-4">
-    {% for course in course_row %}
-        {% if course.name %}
-        <div class="col-lg-4 col-sm-12 mb-2">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">
-                        {{course.name}}
-                    </h5>
-                    <hr>
-                    <p class="card-text">
-                        {{course.description}}
-                    </p>
-                    <a href='/course/{{course._id}}' class="btn btn-secondary">Открыть</a>
-                </div>
-            </div>
-        </div>
-        {% endif %}
-    {% endfor %}
-    </div>       
-    {% endfor%}
-{% endif %}
+<div class="bg-holder d-sm-none"
+    style="background-image:url(static/img/hero-bg.png);background-position:right top;background-size:contain;">
 </div>
 
+
+<div class="container">
+    <div class="row justify-content-center align-items-center min-vh-75 min-vh-md-100">
+        <div class="col-md-12 col-lg-10 py-6 text-sm-start text-center">
+            <h3 class="mt-6 mb-sm-4 display-2 fw-semi-bold lh-sm fs-4 fs-lg-6 fs-xxl-8">Доступные курсы</h3>
+            {% if current_user.has_role('admin') %}
+            <div class="mt-5 mb-5 mx-auto" style="width: 150px">
+                <a href="/course/create" class="btn btn-lg btn-primary rounded-pill bg-gradient order-0">Создать новый
+                    курс</a>
+            </div>
+            {% endif %}
+            {% if courses is defined %}
+            {% for course_row in courses | batch(3, '&nbsp;') %}
+            <div class="row mb-4">
+                {% for course in course_row %}
+                {% if course.name %}
+                <div class="col-lg-4 col-sm-12 mb-2">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                {{course.name}}
+                            </h5>
+                            <hr>
+                            <p class="card-text">
+                                {{course.description}}
+                            </p>
+                            <a href='/course/{{course._id}}'
+                                class="btn btn-sm btn-primary rounded-pill bg-gradient order-0">Открыть</a>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+            {% endfor%}
+            {% endif %}
+        </div>
+    </div>
+</div>
 
 {% endblock %}
