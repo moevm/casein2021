@@ -1,7 +1,7 @@
 import os
 import sys
 from uuid import uuid4
-from flask import Blueprint, request, flash, redirect, url_for, render_template, current_app
+from flask import Blueprint, request, flash, redirect, url_for, render_template, current_app, send_from_directory
 from flask_security import login_required, current_user, roles_required
 from app.db_models import File, DBManager
 from werkzeug.utils import secure_filename
@@ -11,23 +11,24 @@ logger = logging.getLogger('root')
 
 bp = Blueprint('files', __name__, url_prefix='/files')
 
-# TODO: to config
-UPLOAD_FOLDER = 'app/web/static/documents/'
-ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'svg'}
-logger.error(f"UPLOAD_FOLDER: {UPLOAD_FOLDER}")
-
-if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER)
-
 def allowed_file(filename):
     return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+           filename.rsplit('.', 1)[1].lower() in current_app.config['ALLOWED_EXTENSIONS']
 
+@bp.before_app_first_request
+def create_upload_folder():
+    if not os.path.exists(current_app.config['UPLOAD_FOLDER']):
+        os.makedirs(current_app.config['UPLOAD_FOLDER'])
 
 @bp.route('/', methods=['GET', 'POST'])
 @login_required
 def files_list():
     return render_template("files.html", files=File.objects)
+
+@bp.route('/<file_id>', methods=['GET', 'POST'])
+@login_required
+def get_file(file_id):
+    return send_from_directory(current_app.config['UPLOAD_FOLDER'], file_id)
 
 @bp.route('/upload', methods=['GET', 'POST'])
 @login_required
@@ -41,8 +42,8 @@ def upload_file():
 def remove_file(file_id):
     file = DBManager.get_file(file_id)
     if file:
-        if os.path.exists(os.path.join(UPLOAD_FOLDER,file.filename)):
-            os.remove(os.path.join(UPLOAD_FOLDER,file.filename))
+        if os.path.exists(os.path.join(current_app.config['UPLOAD_FOLDER'], file.filename)):
+            os.remove(os.path.join(current_app.config['UPLOAD_FOLDER'], file.filename))
         file.delete()
     return redirect(f'/files/')
 
@@ -70,17 +71,19 @@ def update_file(file_id):
                 filename = f'{uuid4()}.{ext}'
                 db_file = File(_id=file_id, title=request.form.get('title'), filename=filename)
                 db_file.save()
-                file.save(os.path.join(UPLOAD_FOLDER, filename))
+                file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
                 return redirect(url_for('files.files_list'))
+            else:
+                return 'Неразрешенное разрешение файла!'
         else: # update
             if 'file' in request.files:
                 file = request.files['file']
                 logger.error(f'POST, is existing: {file}')
                 if file and allowed_file(file.filename):
                     ext = file.filename.rsplit('.', 1)[1].lower()
-                    os.remove(os.path.join(UPLOAD_FOLDER, existing.filename))
+                    os.remove(os.path.join(current_app.config['UPLOAD_FOLDER'], existing.filename))
                     filename = f'{uuid4()}.{ext}'
-                    file.save(os.path.join(UPLOAD_FOLDER, filename))
+                    file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
                     existing.filename = filename
             existing.title=request.form.get('title')
             existing.save()
