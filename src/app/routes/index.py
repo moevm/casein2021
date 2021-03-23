@@ -28,12 +28,12 @@ def login_context():
 
 
 @bp.route('/')
-@login_required
 def index():
     return render_template("index.html")
 
 
 @bp.route('/users')
+@login_required
 @roles_required('admin')
 def users_page():
     return render_template("users.html", users=User.objects())
@@ -45,12 +45,14 @@ def user_create():
 
 
 @bp.route('/user/<user_id>')
+@login_required
 def user_page(user_id):
     user = DBManager.get_user(user_id)
     return render_template("user_id.html", user=user) if user else (f'Пользователь {user_id} не найден', 404)
 
 
 @bp.route('/user/update/<user_id>', methods=['GET', 'POST'])
+@login_required
 def user_update(user_id):
     """
     GET - страница редактирования пользователя (== страница создания пользователя с заполненными полями)

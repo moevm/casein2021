@@ -2,6 +2,7 @@ import os
 import sys
 from uuid import uuid4
 from flask import Blueprint, request, flash, redirect, url_for, render_template, current_app
+from flask_security import login_required, current_user, roles_required
 from app.db_models import File, DBManager
 from werkzeug.utils import secure_filename
 import logging
@@ -24,14 +25,19 @@ def allowed_file(filename):
 
 
 @bp.route('/', methods=['GET', 'POST'])
+@login_required
 def files_list():
     return render_template("files.html", files=File.objects)
 
 @bp.route('/upload', methods=['GET', 'POST'])
+@login_required
+@roles_required('admin')
 def upload_file():
     return redirect(f'/files/update/{str(uuid4())}?new=true')
 
 @bp.route('/remove/<file_id>', methods=['GET', 'POST'])
+@login_required
+@roles_required('admin')
 def remove_file(file_id):
     file = DBManager.get_file(file_id)
     if file:
@@ -41,6 +47,8 @@ def remove_file(file_id):
     return redirect(f'/files/')
 
 @bp.route('/update/<file_id>', methods=['GET', 'POST'])
+@login_required
+@roles_required('admin')
 def update_file(file_id):
     """
     GET - страница редактирования файла (== страница создания файла с заполненными полями)
