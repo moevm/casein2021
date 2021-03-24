@@ -73,15 +73,23 @@ def course_update(course_id):
         else:
             return f"Курс {course_id} не найден", 404
     else:
-        # пример словаря с клиента
-        #tasks=[]
-        #for i in range(0, int(request.form['tasks_count'])):
-        #    task = dict(_id='_id'+ str(i), name=request.form['name_' + str(i)], condition=request.form['condition_' + str(i)], task_type=request.form['type_' + str(i)], check={'test':request.form['check_' + str(i)]})
-        #    tasks.append(task)
         obj = {'_id': course_id, 'name': request.form['name'], 'description': request.form['description']}
         course = Course.from_object(obj)
         course.save()
         return redirect(f'/course/{course_id}')
+
+
+@bp.route('/remove/<course_id>', methods=['GET'])
+@login_required
+@roles_required('admin')
+def course_remove(course_id):
+    course = DBManager.get_course(course_id)
+    if course:
+        return_str = f"Курс '{course.name}' удален"
+        course.delete()
+        return return_str
+    else:
+        return f"Курс {course_id} не найден", 404
 
 
 @bp.route('/update/<course_id>/task/create', methods=['GET'])
