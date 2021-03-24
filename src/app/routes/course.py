@@ -35,6 +35,49 @@ def course_page(course_id):
     course = DBManager.get_course(course_id)
     return render_template("course_id.html", course=course) if course else (f'Курс {course_id} не найден', 404)
 
+@bp.route('/<course_id>/task/<task_id>')
+@login_required
+def task_page(course_id, task_id):
+    course = DBManager.get_course(course_id)
+    task = DBManager.get_task(task_id)
+    
+    task_index = course.tasks.index(task)
+    prev_task = course.tasks[task_index-1]._id if task_index > 0 else None
+    next_task = course.tasks[task_index+1]._id if task_index < len(course.tasks)-1 else None
+    
+    prev_url = url_for('course.task_page', course_id=course_id, task_id=prev_task) \
+        if prev_task else url_for('course.course_page', course_id=course_id)
+    next_url = url_for('course.task_page', course_id=course_id, task_id=next_task) \
+        if next_task else url_for('course.course_page', course_id=course_id)
+    
+    return render_template(
+        "task_passing.html", 
+        course=course, 
+        task=task, 
+        prev_url=prev_url, 
+        next_url=next_url) \
+        if course and task and task in course.tasks \
+        else (f'Задача {task_id} в курсе {course_id} не найдена', 404)
+
+
+@bp.route('/check/<course_id>/<task_id>', methods=['POST'])
+@login_required
+def task_check(course_id, task_id):
+    logger.error('start check')
+    course = DBManager.get_course(course_id)
+    task = DBManager.get_task(task_id)
+    user_answer = json_loads(request.form['answer'])
+    result = None
+    if course and task:
+        if task.task_type == 'test':
+            true_ans = [answer[0] for answer in task.check['test']['answers']]
+            user_ans = user_answer
+            result = (true_ans == user_ans)
+        solution = Solution(course=course, task=task, user=current_user._get_current_object(), score=result * task.score)
+        solution.save()
+        return {'result': result}
+    else:
+        return (f'Задача {task_id} в курсе {course_id} не найдена', 404)
 
 
 @bp.route('/check/<course_id>', methods=['POST'])
