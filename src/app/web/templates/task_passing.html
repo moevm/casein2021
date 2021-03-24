@@ -33,12 +33,13 @@
                 </div>
                 <hr>
                 <button id="check_test" type="submit" class="btn btn-primary">Проверить</button>
-                <div id='check_result'></div>
+                <div id='check_result'></div>                
             </form>
             <hr>
-            <a href="{{url_for('course.course_page', course_id=course._id)}}">Курс</a>
+            <a class="btn btn-secondary" href={{next_url}}>Следующая</button>
+            <a class='btn' href="{{url_for('course.course_page', course_id=course._id)}}">Курс</a>
             {% for task_it in course.tasks %}
-                <a href="{{url_for('course.task_page', course_id=course._id, task_id=task_it._id)}}">
+                <a class='btn' href="{{url_for('course.task_page', course_id=course._id, task_id=task_it._id)}}">
                     {% if task_it._id != task._id %}
                         {{loop.index}}
                     {% else %}

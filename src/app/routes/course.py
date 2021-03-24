@@ -45,8 +45,6 @@ def task_page(course_id, task_id):
     prev_task = course.tasks[task_index-1]._id if task_index > 0 else None
     next_task = course.tasks[task_index+1]._id if task_index < len(course.tasks)-1 else None
     
-    prev_url = url_for('course.task_page', course_id=course_id, task_id=prev_task) \
-        if prev_task else url_for('course.course_page', course_id=course_id)
     next_url = url_for('course.task_page', course_id=course_id, task_id=next_task) \
         if next_task else url_for('course.course_page', course_id=course_id)
     
@@ -54,8 +52,8 @@ def task_page(course_id, task_id):
         "task_passing.html", 
         course=course, 
         task=task, 
-        prev_url=prev_url, 
-        next_url=next_url) \
+        next_url=next_url
+        ) \
         if course and task and task in course.tasks \
         else (f'Задача {task_id} в курсе {course_id} не найдена', 404)
 
