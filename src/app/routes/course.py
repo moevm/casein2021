@@ -1,3 +1,4 @@
+import datetime
 import pandas as pd
 
 from uuid import uuid4
@@ -33,7 +34,8 @@ def course_create():
 @login_required
 def course_page(course_id):
     course = DBManager.get_course(course_id)
-    return render_template("course_id.html", course=course) if course else (f'Курс {course_id} не найден', 404)
+    last_task = Solution.objects(user=current_user.pk, course=course_id).order_by('-datetime').first()
+    return render_template("course_id.html", course=course, last_task=last_task) if course else (f'Курс {course_id} не найден', 404)
 
 @bp.route('/<course_id>/task/<task_id>')
 @login_required
@@ -61,7 +63,6 @@ def task_page(course_id, task_id):
 @bp.route('/check/<course_id>/<task_id>', methods=['POST'])
 @login_required
 def task_check(course_id, task_id):
-    logger.error('start check')
     course = DBManager.get_course(course_id)
     task = DBManager.get_task(task_id)
     user_answer = json_loads(request.form['answer'])
@@ -71,7 +72,8 @@ def task_check(course_id, task_id):
             true_ans = [answer[0] for answer in task.check['test']['answers']]
             user_ans = user_answer
             result = (true_ans == user_ans)
-        solution = Solution(course=course, task=task, user=current_user._get_current_object(), score=result * task.score)
+        logger.error(f'datetime: {datetime.datetime.utcnow()}')
+        solution = Solution(course=course, task=task, user=current_user._get_current_object(), score=result * task.score, datetime=datetime.datetime.utcnow())
         solution.save()
         return {'result': result}
     else:

@@ -25,7 +25,11 @@
             </div>
             {% endif %}
             <div class="mt-5 mb-5 mx-auto" style="width: 150px">
-                <a href="{{url_for('course.task_page', course_id=course._id, task_id=course.tasks[0]._id)}}" class="btn btn-secondary bg-gradient order-0">К первой задаче</a>
+                {%if last_task is not none %}
+                    <a href="{{url_for('course.task_page', course_id=course._id, task_id=last_task)}}" class="btn btn-secondary bg-gradient order-0">Последняя задача</a>
+                {% else %}
+                    <a href="{{url_for('course.task_page', course_id=course._id, task_id=course.tasks[0]._id)}}" class="btn btn-secondary bg-gradient order-0">Первая задача</a>
+                {% endif %}
             </div>
         </div>
     </div>
