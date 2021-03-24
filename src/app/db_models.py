@@ -97,6 +97,7 @@ class File(me.Document):
     _id = me.StringField(primary_key=True)
     title = me.StringField()
     filename = me.StringField()
+    filepath = me.StringField()
 
 
 class DBManager:

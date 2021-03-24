@@ -57,9 +57,6 @@ def update_file(file_id):
     """
     if request.method == 'POST':
         existing = DBManager.get_file(file_id)
-        
-        logger.error(f'is existing: {existing}')
-        logger.error(f'request.files: {request}')
         if not existing: # add
             if 'file' not in request.files:
                 return 'No file part'
@@ -68,23 +65,23 @@ def update_file(file_id):
                 return 'No selected file'
             if file and allowed_file(file.filename):
                 ext = file.filename.rsplit('.', 1)[1].lower()
-                filename = f'{uuid4()}.{ext}'
-                db_file = File(_id=file_id, title=request.form.get('title'), filename=filename)
+                filepath = f'{uuid4()}.{ext}'
+                db_file = File(_id=file_id, title=request.form.get('title'), filename=file.filename,filepath=filepath)
                 db_file.save()
-                file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
+                file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filepath))
                 return redirect(url_for('files.files_list'))
             else:
                 return 'Неразрешенное разрешение файла!'
         else: # update
             if 'file' in request.files:
                 file = request.files['file']
-                logger.error(f'POST, is existing: {file}')
                 if file and allowed_file(file.filename):
                     ext = file.filename.rsplit('.', 1)[1].lower()
-                    os.remove(os.path.join(current_app.config['UPLOAD_FOLDER'], existing.filename))
-                    filename = f'{uuid4()}.{ext}'
-                    file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
-                    existing.filename = filename
+                    os.remove(os.path.join(current_app.config['UPLOAD_FOLDER'], existing.filepath))
+                    filepath = f'{file_id}.{ext}'
+                    file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filepath))
+                    existing.filename = file.filename
+                    existing.filepath = filepath
             existing.title=request.form.get('title')
             existing.save()
             return redirect(url_for('files.files_list'))

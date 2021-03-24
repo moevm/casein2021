@@ -4,20 +4,60 @@
 
 {% block content %}
 
-<div>
-    <a href="/files/upload">Добавить файл</a>
+<div class="bg-holder d-none d-sm-block"
+    style="background-image:url(static/img/hero-bg.png);background-position:right top;background-size:contain;">
+</div>
+<!--/.bg-holder-->
+
+<div class="bg-holder d-sm-none"
+    style="background-image:url(static/img/hero-bg.png);background-position:right top;background-size:contain;">
 </div>
 
-{% if files is defined %}
-    <ul>
-    {% for file in files %}
-    <li>
-        <a href='/files/update/{{file._id}}'>{{file.title}}</a>; 
-        <a href='/files/remove/{{file._id}}'>remove</a> 
-        <a href="{{ url_for('files.get_file', file_id=file.filename)}}"> show </a><br>
-    </li>
-    {% endfor %}
-    </ul>
-{% endif%}
 
+<div class="container">
+    <div class="row justify-content-center  min-vh-75 min-vh-md-100">
+        <div class="col-md-12 col-lg-10 py-6 text-sm-start text-center">
+            <h3 class="mt-6 mb-sm-4 display-2 fw-semi-bold lh-sm fs-4 fs-lg-6 fs-xxl-8">Доступные файлы</h3>
+            {% if current_user.has_role('admin') %}
+            <div class="mt-5 mb-5 mx-auto" style="width: 150px">
+                <a href="/files/upload" class="btn btn-lg btn-primary rounded-pill bg-gradient order-0">Добавить файл</a>
+            </div>
+            {% endif %}
+            
+            {% if files is defined %}
+            {% for file_row in files | batch(3, '&nbsp;') %}
+            <div class="row mb-4">
+                {% for file in file_row %}
+                {% if file._id %}
+                <div class="col-lg-4 col-sm-12 mb-2">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                {{file.title}}
+                            </h5>
+                            <hr>
+                            <a href="{{ url_for('files.get_file', file_id=file.filepath)}}"
+                                class="btn btn-sm btn-primary rounded-pill bg-gradient order-0"> Открыть </a>
+                            {% if current_user.has_role('admin') %}
+                                <a href='/files/update/{{file._id}}'
+                                    class="btn btn-sm btn-primary rounded-pill bg-gradient order-0">Редактировать</a>
+                                <a href='/files/remove/{{file._id}}'
+                                    class="btn btn-sm btn-primary rounded-pill bg-gradient order-0">Удалить</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+            {% endfor%}
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block script %}
+    
 {% endblock %}

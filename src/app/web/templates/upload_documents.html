@@ -6,8 +6,30 @@
 
 {% block content %}
 
-<div>
-    <h1>{% if is_editing %}Редактировать документ{% else %}Создать документ{% endif %}</h1>
+<div class="container">
+    <div class="row justify-content-center align-items-center min-vh-75 min-vh-md-100">
+        <div class="col-md-10 col-lg-6 py-6 text-sm-start text-center">
+            <h3 class="mt-6 mb-sm-4 display-2 fw-semi-bold lh-sm fs-4 fs-lg-6 fs-xxl-8">{% if file.title %}Редактирование документа{% else %}Загрузка документа{% endif %}</h3>
+            <form id="create_file" method="post" enctype='multipart/form-data'>
+                <div class="mb-3">
+                    <label for="course_name" class="form-label">Название документа</label>
+                    <input type="text" name="title" id="title" class="form-control" {% if file.title %}value="{{file.title}}"{% endif %} required>
+                    {% if file.title %}
+                    <label for="course_name" class="form-label">Текущий документ</label>
+                    <input type="text" name="filename" id="filename" class="form-control" {% if file.title %}value="{{file.filename}}"{% endif %} disabled>
+                    {% endif %}
+                    <label for="course_description" class="form-label mt-1">Загрузка документа</label><br>
+                    <input type="file" name="file" id="file" class="form-control">
+                </div>
+                <button id="save_course" type="submit" class="btn btn-lg btn-primary">Сохранить документ</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+<!-- <div>
     
     <form id="create_document" method="post" enctype='multipart/form-data'>
         <input type=text name=title {% if is_editing %}value="{{file.title}}"{% endif %} required>
@@ -16,56 +38,5 @@
         <br><br>
         <input type="submit" value="Save">
     </form>
+</div> -->
 
-    {% if is_editing %}
-        <canvas id="the-canvas" style='border: 1px solid black;direction: ltr;'>
-        </canvas>
-    {% endif %}
-</div>
-{% endblock %}
-
-{% if is_editing %}
-    {% block script %}
-        <script src="static/js/pdf.min.js" ></script>
-        <script>
-      
-        let url = "{{ url_for('static', filename='documents/')}}{{file.filename}}"
-        
-        
-        console.log('url:', url)
-
-        pdfjsLib.GlobalWorkerOptions.workerSrc =
-            'static/js/pdf.worker.min.js';
-
-        
-        var loadingTask = pdfjsLib.getDocument(url);
-        loadingTask.promise.then(function(pdf) {
-            console.log('file:', pdf)
-            //
-            // Fetch the first page
-            //
-            pdf.getPage(1).then(function(page) {
-            var scale = 1.5;
-            var viewport = page.getViewport({ scale: scale, });
-
-            //
-            // Prepare canvas using PDF page dimensions
-            //
-            var canvas = document.getElementById('the-canvas');
-            var context = canvas.getContext('2d');
-            canvas.height = viewport.height;
-            canvas.width = viewport.width;
-
-            //
-            // Render PDF page into canvas context
-            //
-            var renderContext = {
-                canvasContext: context,
-                viewport: viewport,
-            };
-            page.render(renderContext);
-            });
-        });
-        </script>
-    {% endblock %}
-{% endif %}
