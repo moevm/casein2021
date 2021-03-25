@@ -7,7 +7,7 @@
 <div class="container">
     <div class="row justify-content-center align-items-center min-vh-75 min-vh-md-100">
         <div class="col-md-10 col-lg-6 py-6 text-sm-start text-center">
-            <form id="import_collection_form" method="post">
+            <form id="export_collection_form" method="post">
                 <div class="mb-3">
                     <label for="collection" class="form-label">Коллекция</label>
                     <select id="collection" name="collection" class="form-select form-select-lg">
@@ -16,13 +16,9 @@
                         {% endfor %}
                       </select>                  
                 </div>
-                <div class="mb-3">
-                    <label for="import_document" class="form-label">Импоритруемый файл</label>
-                    <select id="import_document" name="import_document" class="form-select form-select-lg">
-                    </select>                  
-                </div>
-                <button id="import" type="submit" class="btn btn-lg btn-primary">Импортировать</button>
+                <button id="export" type="submit" class="btn btn-lg btn-primary">Экспортировать</button>
             </form>
+            <span id='success'></span>
         </div>
     </div>
 </div>
@@ -31,27 +27,10 @@
 
 {% block script %}
 <script>
-$(function() {
-    function files_option(selecter, data){
-        data.forEach(element => {
-            selecter.append(new Option(element, element)) 
-        });
-    }
+    $(function() {
 
-    let first_collection = {{collections|safe}}[0];
-    let files = {{files|safe}};
-
-    files_option($('#import_document'), files.filter((word) => {return word.startsWith(first_collection)}))
-    
-    $('#collection').on('click', function (event) {
-        $('#import_document').empty()
-        let fd = files.filter((word) => {return word.startsWith(this.value)});
-        files_option($('#import_document'), fd)
-    })
-
-
-    $("#import_collection_form").on('submit', function (event) {
-        $("#import").html("<span class='spinner-border spinner-border-sm'></span> Сохранение")
+    $("#export_collection_form").on('submit', function (event) {
+        $("#export").html("<span class='spinner-border spinner-border-sm'></span> Сохранение")
         event.preventDefault()
         var data = {
             'collection': $("#collection").val(),
@@ -60,7 +39,7 @@ $(function() {
 
             
         $.ajax({
-            url: "{{url_for('import_and_export.import')}}",
+            url: "{{url_for('import_and_export.export')}}",
             type:'POST',
             contenType: 'application/json',
             data: data,

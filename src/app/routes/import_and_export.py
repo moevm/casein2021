@@ -13,6 +13,11 @@ logger = logging.getLogger('root')
 
 bp = Blueprint('import_and_export', __name__, url_prefix='/import_and_export')
 
+ALLOWED_COLLECTIONS = ['course', 'task', 'solution']
+
+@bp.before_app_first_request
+def init_tasks_and_courses():
+    pass
 
 @bp.route('/export/<collection>', methods=['GET'])
 @login_required
@@ -54,7 +59,6 @@ def import_collection():
         # dump_path = os.path.join(current_app.config["DUMP_FOLDER"], collection+datetime.datetime.utcnow().strftime("%Y_%m_%dT%X:%f")+".json")
         return f'collection'
     else:
-        collections = ['course', 'task', 'solution']
         folder = current_app.config["DUMP_FOLDER"]
         files = [f for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))]
-        return render_template('import.html', collections=collections, files=files)
+        return render_template('import.html', collections=ALLOWED_COLLECTIONS, files=files)
