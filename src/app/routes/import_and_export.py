@@ -5,6 +5,7 @@ import datetime
 import subprocess
 from uuid import uuid4
 from cryptography.fernet import Fernet
+from app.db_models import Course, Task
 from flask import Blueprint, request, flash, redirect, url_for, render_template, current_app
 from flask_security import login_required, current_user, roles_required
 
@@ -87,11 +88,12 @@ def init_tasks_and_courses():
     if not os.path.exists(current_app.config['DUMP_FOLDER']):
         os.makedirs(current_app.config['DUMP_FOLDER'])
     key = os.environ.get('ENCRYPT_KEY').encode('utf-8')
-    courses = os.path.join(current_app.config['DUMP_FOLDER'], 'init_course_enc.json')
-    tasks = os.path.join(current_app.config['DUMP_FOLDER'], 'init_task_enc.json')
-    if os.path.exists(courses) and os.path.exists(tasks): 
-       decrypt_and_import(tasks, key, 'task')
-       decrypt_and_import(courses, key, 'course')
+    if len(Course.objects) == 0 and len(Task.objects) == 0:
+        courses = os.path.join(current_app.config['DUMP_FOLDER'], 'init_course_enc.json')
+        tasks = os.path.join(current_app.config['DUMP_FOLDER'], 'init_task_enc.json')
+        if os.path.exists(courses) and os.path.exists(tasks):
+            decrypt_and_import(tasks, key, 'task')
+            decrypt_and_import(courses, key, 'course')
 
 
 
@@ -120,10 +122,10 @@ def import_collection():
     if request.method=='POST':
         logger.error(f'form:{request.form}') 
         dump_path = os.path.join(current_app.config["DUMP_FOLDER"], request.form.get('document'))
-        # return ('fail', 500)
-        if os.path.isfile(dump_path) and request.form.get(collection):
-            import_collection_from_file(request.form.get(collection), dump_path)
-            return f"Коллекция {collection} импортирована из файла {request.form.get('document')}"
+        logger.error(f'dump: {os.path.exists(dump_path)}, collection: {request.form.get("collection")}')
+        if os.path.exists(dump_path) and request.form.get('collection'):
+            import_collection_from_file(request.form.get('collection'), dump_path)
+            return f"Коллекция {request.form.get('collection')} импортирована из файла {request.form.get('document')}"
         else:
             return ('fail', 500)
     else:
