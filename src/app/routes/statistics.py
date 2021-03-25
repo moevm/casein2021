@@ -39,14 +39,9 @@ def create_temp_folder():
 @bp.route('/', methods=['GET'])
 @login_required
 @roles_required('admin')
-def users_list():
-    with open(os.path.join(current_app.config['TMP_FOLDER'], 'test.txt'), 'w', encoding='utf-8') as file:
-        for task in Task.objects.only('name'):
-            file.write(str(task.to_json()))
-    return send_from_directory(current_app.config['TMP_FOLDER'], 'test.txt')
+def statistics_main():
+    return render_template('statistics/statistics_main.html')
 
-
-pd.set_option('display.max_columns', 10)
 
 @bp.route('/courses', methods=['GET'])
 @login_required
@@ -54,7 +49,7 @@ pd.set_option('display.max_columns', 10)
 def courses_statistics():
     solutions = Solution.objects.aggregate(users_course_aggregate)
     user_role_id = Role.objects(name='user').first().pk
-    logger.error(user_role_id)
+    
     users_aggregate = [
         { '$match': { 'roles': {'$in' :[user_role_id, '$roles']} }},
         {'$set': {'_id': {'$function': { 'body': 'function(i) { return i.toString() }', 'args': [ "$_id" ], 'lang': "js"}}}}
