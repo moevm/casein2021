@@ -1,4 +1,4 @@
 *.pyc
 
 src/app/web/documents/
-!src/app/web/documents/dump/*_enc.json
+!src/app/web/documents/dump/init_*_enc.json
