@@ -60,7 +60,7 @@ $(function() {
 
             
         $.ajax({
-            url: "{{url_for('import_and_export.import')}}",
+            url: "{{url_for('import_and_export.import_collection')}}",
             type:'POST',
             contenType: 'application/json',
             data: data,

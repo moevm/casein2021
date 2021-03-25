@@ -39,12 +39,13 @@
 
             
         $.ajax({
-            url: "{{url_for('import_and_export.export')}}",
+            url: "{{url_for('import_and_export.export_collection')}}",
             type:'POST',
             contenType: 'application/json',
             data: data,
             success: function(resp){
                 $("#import").html("Успешно импортировано")
+                $('#success').innerHtml=resp
             },
             error: function(resp){
                 $("#import").html("Что-то пошло не так! Попробуйте позже")
