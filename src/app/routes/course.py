@@ -37,6 +37,7 @@ def course_page(course_id):
     last_task = Solution.objects(user=current_user.pk, course=course_id).order_by('-datetime').first()
     return render_template("course_id.html", course=course, last_task=last_task) if course else (f'Курс {course_id} не найден', 404)
 
+
 @bp.route('/<course_id>/task/<task_id>')
 @login_required
 def task_page(course_id, task_id):
@@ -72,7 +73,6 @@ def task_check(course_id, task_id):
             true_ans = [answer[0] for answer in task.check['test']['answers']]
             user_ans = user_answer
             result = (true_ans == user_ans)
-        logger.error(f'datetime: {datetime.datetime.utcnow()}')
         solution = Solution(course=course, task=task, user=current_user._get_current_object(), score=result * task.score, datetime=datetime.datetime.utcnow())
         solution.save()
         return {'result': result}
@@ -119,7 +119,7 @@ def course_update(course_id):
         obj = {'_id': course_id, 'name': request.form['name'], 'description': request.form['description']}
         course = Course.from_object(obj)
         course.save()
-        return redirect(f'/course/{course_id}')
+        return redirect(url_for('course.course_page', course_id=course_id))
 
 
 @bp.route('/remove/<course_id>', methods=['GET'])
@@ -156,8 +156,6 @@ def task_course_update(course_id, task_id):
             return f"Задание {task} не найдено", 404
     else:
         task_info = request.form.to_dict()
-        # logger.error(task_info)
-        # logger.error(task_info.get('score'))
         task_info['_id'] = task_id
         if task_info['task_type'] == 'test':
             task_info['check'] = {'test': json_loads(task_info['check'])}

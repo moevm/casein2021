@@ -27,6 +27,8 @@
             <div class="mt-5 mb-5 mx-auto" style="width: 150px">
                 {%if last_task is not none %}
                     <a href="{{url_for('course.task_page', course_id=course._id, task_id=last_task)}}" class="btn btn-secondary bg-gradient order-0">Последняя задача</a>
+                {% elif (course.tasks)|length == 0 %}
+                    <span>В курсе пока нет задач</span>
                 {% else %}
                     <a href="{{url_for('course.task_page', course_id=course._id, task_id=course.tasks[0]._id)}}" class="btn btn-secondary bg-gradient order-0">Первая задача</a>
                 {% endif %}

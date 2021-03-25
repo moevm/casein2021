@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}Файлы{% endblock %}
+
+{% block content %}
+
+<div class="container">
+    <div class="row justify-content-center align-items-center min-vh-75 min-vh-md-100">
+        <div class="col-md-10 col-lg-6 py-6 text-sm-start text-center">
+            <form id="import_collection" method="post">
+                <div class="mb-3">
+                    <label for="collection" class="form-label">Коллекция</label>
+                    <select id="collection" name="collection" class="form-select form-select-lg">
+                        {% for collection in collections %}
+                            <option value="{{ collection }}">{{ collection }}</option>
+                        {% endfor %}
+                      </select>                  
+                </div>
+                <div class="mb-3">
+                    <label for="import_document" class="form-label">Импоритруемый файл</label>
+                    <select id="import_document" name="import_document" class="form-select form-select-lg">
+                    </select>                  
+                </div>
+                <button id="save_course" type="submit" class="btn btn-lg btn-primary">Импортировать</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block script %}
+<script>
+    $(function() {
+        function files_option(selecter, data){
+            data.forEach(element => {
+                selecter.append(new Option(element, element)) 
+            });
+        }
+
+        let first_collection = {{collections|safe}}[0];
+        let files = {{files|safe}};
+
+        files_option($('#import_document'), files.filter((word) => {return word.startsWith(first_collection)}))
+        
+        $('#collection').on('click', function (event) {
+            $('#import_document').empty()
+            let fd = files.filter((word) => {return word.startsWith(this.value)});
+            files_option($('#import_document'), fd)
+        })
+    })
+    
+</script>
+{% endblock %}

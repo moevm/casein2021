@@ -12,6 +12,7 @@ from app.routes.index import bp as index_bp
 from app.routes.course import bp as course_bp
 from app.routes.files import bp as files_bp
 from app.routes.statistics import bp as statistic_bp
+from app.routes.import_and_export import bp as import_and_export_bp
 
 import logging
 logger = logging.getLogger('root')
@@ -32,6 +33,7 @@ app.config['MONGODB_SETTINGS'] = {
 app.config['SECRET_KEY'] = 'SECRET_KEY'
 app.config['SECURITY_PASSWORD_SALT'] = 'some arbitrary super secret string'
 app.config['TMP_FOLDER'] = 'app/web/documents/tmp/'
+app.config['DUMP_FOLDER'] = 'app/web/documents/dump/'
 app.config['UPLOAD_FOLDER'] = 'app/web/documents/upload'
 app.config['ALLOWED_EXTENSIONS'] = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'svg'}
 
@@ -39,6 +41,7 @@ app.register_blueprint(index_bp)
 app.register_blueprint(course_bp)
 app.register_blueprint(files_bp)
 app.register_blueprint(statistic_bp)
+app.register_blueprint(import_and_export_bp)
 
 db = MongoEngine(app)
 
