@@ -25,7 +25,7 @@ def create_upload_folder():
 @bp.route('/', methods=['GET', 'POST'])
 @login_required
 def files_list():
-    return render_template("files.html", files=File.objects)
+    return render_template("files/files.html", files=File.objects)
 
 @bp.route('/<file_id>', methods=['GET', 'POST'])
 @login_required
@@ -92,6 +92,6 @@ def update_file(file_id):
         file = DBManager.get_file(file_id)
         if file or request.args.get('new'):
             logger.error(f'GET, is existing: {file}')
-            return render_template("upload_documents.html", file=file)
+            return render_template("files/upload_documents.html", file=file)
         else:
             return f"Файл {file_id} не найден", 404

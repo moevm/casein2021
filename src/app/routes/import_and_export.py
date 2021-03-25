@@ -112,7 +112,7 @@ def export_collection():
     else:
         folder = current_app.config["DUMP_FOLDER"]
         files = [f for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))]
-        return render_template('export.html', collections=ALLOWED_COLLECTIONS)
+        return render_template('import_export/export.html', collections=ALLOWED_COLLECTIONS)
 
 
 @bp.route('/import/', methods=['GET', 'POST'])
@@ -131,4 +131,4 @@ def import_collection():
     else:
         folder = current_app.config["DUMP_FOLDER"]
         files = [f for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))]
-        return render_template('import.html', collections=ALLOWED_COLLECTIONS, files=files)
+        return render_template('import_export/import.html', collections=ALLOWED_COLLECTIONS, files=files)
