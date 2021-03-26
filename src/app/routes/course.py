@@ -14,6 +14,7 @@ bp = Blueprint('course', __name__, url_prefix='/course')
 import logging
 logger = logging.getLogger('root')
 
+TASK_TYPES = ['test', 'big_five']
 
 @bp.route('/')
 @login_required
@@ -27,7 +28,7 @@ def course_index():
 def course_create():
     new_course = Course(_id=str(uuid4()))
     new_course.save()
-    return redirect(url_for('courses_and_tasks/course.course_update', course_id=new_course._id, new=True))
+    return redirect(url_for('course.course_update', course_id=new_course._id, new=True))
 
 
 @bp.route('/<course_id>')
@@ -112,9 +113,10 @@ def course_update(course_id):
     POST - обновление курса
     """
     if request.method == 'GET':
+        
         course = DBManager.get_course(course_id)
         if course or request.args.get('new'):
-            return render_template("courses_and_tasks/course_create.html", course=course)
+            return render_template("courses_and_tasks/course_create.html", course=course, task_types=TASK_TYPES)
         else:
             return f"Курс {course_id} не найден", 404
     else:
@@ -141,31 +143,65 @@ def course_remove(course_id):
 @login_required
 @roles_required('admin')
 def task_course_create(course_id):
-    return redirect(url_for('course.task_course_update', course_id=course_id, task_id=uuid4(), new=True))
+    logger.error(request.args)
+    logger.error(request.args.get('task_type'))
+    return redirect(url_for('course.task_course_update', 
+        course_id=course_id, 
+        task_id=uuid4(), 
+        task_type= request.args.get('task_type'),
+        new=True))
 
 
 @bp.route('/update/<course_id>/task/<task_id>', methods=['GET', 'POST'])
 @login_required
 @roles_required('admin')
 def task_course_update(course_id, task_id):
+    logger.error(f'method: {request.method}')
     if request.method == 'GET':
         if not DBManager.get_course(course_id):
             return f"Курс {course_id} не найден", 404
         task = DBManager.get_task(task_id)
         if task or request.args.get('new'):
-            return render_template("courses_and_tasks/task_create.html", task=task, course_id=course_id, task_id=task_id, task_type=request.args.get('task_type', 'test'))
+            task_type = request.args.get('task_type')
+            if request.args.get('task_type') in TASK_TYPES:
+                template = None
+                if task_type == 'test':
+                    template = "courses_and_tasks/task_types/task_test.html"
+                elif task_type == 'big_five':
+                    template = "courses_and_tasks/task_types/task_big_five.html"
+                else:
+                    return f"Неверный тип задания", 400
+                return render_template(template, task=task, course_id=course_id, task_id=task_id, task_type=task_type)
+            else:
+                return f"Неверный тип задания", 400
         else:
             return f"Задание {task} не найдено", 404
     else:
         task_info = request.form.to_dict()
         task_info['_id'] = task_id
+        logger.error(f'task_info: {task_info}')
         if task_info['task_type'] == 'test':
             task_info['check'] = {'test': json_loads(task_info['check'])}
-        task = Task.from_object(task_info).save()
-        course = DBManager.get_course(course_id)
-        if task in course.tasks:
-            return 'задача в курсе'
-        else:
-            course.tasks.append(task)
-            course.save()
-            return 'добавили в курс'
+        logger.error(f'task_info2: {task_info}')
+        obj = {
+            '_id':task_info.get('_id'),
+            'name':task_info.get('name'),
+            'condition':task_info.get('condition'),
+            'task_type':task_info.get('task_type'),
+            'score':task_info.get('score'),
+            'check':task_info.get('check')
+        }
+        task = Task.from_object(obj)
+        logger.error(f'task: {task}')
+        task.save()
+        logger.error(f'saved task')
+        # course = DBManager.get_course(course_id)
+        # logger.error(f'course: {course}')
+        # logger.error(f'in course: {task in course.tasks}')
+        # if task in course.tasks:
+        #     return 'задача в курсе'
+        # else:
+        #     course.tasks.append(task)
+        #     course.save()
+        #     return 'добавили в курс'
+        return 'err', 400

@@ -33,24 +33,6 @@
                                 <div class="mb-3">
                                     <li>
                                     <h5>{{task.name}}</h5>
-                                    <!--
-                                    <div class="mb-3">
-                                        <label for="name_{{loop.index0}}" class="form-label">Название задания</label>
-                                        <input type="text" name="name_{{loop.index0}}" id="name_{{loop.index0}}" value="{{task.name}}" class="form-control" required>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="condition_{{loop.index0}}" class="form-label">Условие</label>
-                                        <input type="text" name="condition_{{loop.index0}}" id="condition_{{loop.index0}}" value="{{task.condition}}" class="form-control" required>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="type_{{loop.index0}}" class="form-label">Тип задания</label>
-                                        <input type="" name="type_{{loop.index0}}" id="type_{{loop.index0}}" value="{{task.task_type}}" class="form-control" required>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="check_{{loop.index0}}" class="form-label">Проверка</label>
-                                        <input type="text" name="check_{{loop.index0}}" id="check_{{loop.index0}}" value="{{task.check['test']}}" class="form-control" required>
-                                    </div>
-                                    -->
                                     <a href="{{url_for('course.task_course_update', course_id=course._id, task_id=task._id)}}" target="_self">Редактировать задание</a>
                                     </li>
                                 </div>
@@ -62,7 +44,14 @@
                         {% endif %}
                     </ul>
                     <div class="mb-4">
-                        <button id="add_task" class="btn btn-sm btn-secondary " onclick="window.location.href = '{{url_for('course.task_course_create', course_id=course._id)}}'" target="_self">Добавить задание</button>
+                        <select id='task_type' class="form-select form-select-lg">
+                            {% for task_type in task_types %}
+                                <option value='{{task_type}}' name=='{{task_type}}'>{{task_type}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <button id="add_task" class="btn btn-sm btn-secondary">Добавить задание</button>
                     </div>
                 </div>
                 <button id="save_course" type="submit" class="btn btn-lg btn-primary">Сохранить курс</button>
@@ -77,6 +66,13 @@
 {% block script %}
 <script>
     $(function() {
+        $("#add_task").click(() => {
+            task_type = $('#task_type option').filter(':selected').val()
+            // TODO: make smth with this url
+            res_url = "{{url_for('course.task_course_create', course_id=course._id, task_type=task_type)}}" + task_type
+            window.location.href = res_url
+        })
+
         $("#create_course").on('submit', function(event){
             event.preventDefault()
             $("#save_course").html("<span class='spinner-border spinner-border-sm'></span> Сохранение")
