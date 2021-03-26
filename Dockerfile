@@ -5,7 +5,7 @@ RUN apt update
 # install python3.8
 RUN apt install -y software-properties-common
 RUN add-apt-repository -y ppa:deadsnakes/ppa
-RUN apt install -y python3-pip python3.8-dev 
+RUN apt install -y python3-pip python3.8-dev mongo-tools
 
 ADD . /code
 WORKDIR /code

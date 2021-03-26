@@ -31,7 +31,6 @@ def import_collection_from_file(collection, filepath, host='mongo:27017', db='da
 
 
 def export_collection_to_file(collection, filepath, host='mongo:27017', db='database'):
-    logger.error('start export')
     subproc = subprocess.Popen([
             'mongoexport', 
             f'--host={host}', 
@@ -42,16 +41,18 @@ def export_collection_to_file(collection, filepath, host='mongo:27017', db='data
         ],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE)
-    logger.error('finish export')
     logger.error(subproc.communicate())
 
 
 def encrypt_file(filename, key, mode='r'):
-    encrypted = None
+    logger.error(f'{filename}')
+    logger.error(f'{os.path.exists(filename)}')
     with open(filename, mode) as f:
-        decrypted = f.read()
+        decrypted = f.read().encode()
+    logger.error(f'{decrypted}')
     f = Fernet(key)
     encrypted = f.encrypt(decrypted)
+    logger.error('finish enc1')
     return encrypted
 
 
@@ -69,18 +70,33 @@ def save_file(filename, string, mode='w'):
         f.write(string)
 
 
-def encrypt_and_export(filepath, key, collection):
+def encrypt_and_export(filepath, key, collection, need_ecrypt=True):
     export_collection_to_file(collection, filepath)
-    out = encrypt_file(filepath, key)
-    save_file(filepath, out)
+    if (need_ecrypt):
+        logger.error('start enc')
+        out = encrypt_file(filepath, key)
+        save_file(filepath, out, mode='wb')
+        logger.error('finish enc')
     
 
-def decrypt_and_import(filepath, key, collection):
-    tmp_file = os.path.join(current_app.config['DUMP_FOLDER'], f'{uuid4()}.json')
-    out = decrypt_file(filepath, key)
-    save_file(tmp_file, out)
-    import_collection_from_file(collection, filepath)
-    os.remove(tmp_file)
+def decrypt_and_import(filepath, key, collection, need_decrypt=True):
+    to_read = filepath
+    logger.error(f'to_read: {to_read}')
+    if need_decrypt:
+        tmp_file = os.path.join(current_app.config['DUMP_FOLDER'], f'{uuid4()}.json')
+        logger.error(f'tmp_file: {tmp_file}')
+        out = decrypt_file(filepath, key)
+        logger.error(f'out: {out}')
+        save_file(tmp_file, out)
+        to_read = tmp_file
+        logger.error(f'to_read(new): {to_read}')
+    logger.error(f'import')
+    logger.error(f'to_read(new): {os.path.exists(to_read)}')
+    import_collection_from_file(collection, to_read)
+    logger.error(f'imported')
+    
+    if need_decrypt:
+        os.remove(tmp_file)
 
 
 @bp.before_app_first_request
@@ -101,13 +117,15 @@ def init_tasks_and_courses():
 @login_required
 @roles_required('admin')
 def export_collection():
-    if request.method=='POST':
+    if request.method == 'POST':
         base_path = current_app.config["DUMP_FOLDER"]
         dt = datetime.datetime.utcnow().strftime("%Y_%m_%dT%X:%f")
         collection = request.form.get("collection")
         filename = f'{collection}_{dt}.json'
         dump_path = os.path.join(base_path, filename)
-        export_collection_to_file(collection, dump_path)
+        logger.error(f'{dump_path}')
+        key = os.environ.get('ENCRYPT_KEY')
+        encrypt_and_export(dump_path, key, collection, request.form.get('cypher'))
         return f'Коллекция {collection} экпортирована в файл {dump_path}'
     else:
         folder = current_app.config["DUMP_FOLDER"]
@@ -124,7 +142,8 @@ def import_collection():
         dump_path = os.path.join(current_app.config["DUMP_FOLDER"], request.form.get('document'))
         logger.error(f'dump: {os.path.exists(dump_path)}, collection: {request.form.get("collection")}')
         if os.path.exists(dump_path) and request.form.get('collection'):
-            import_collection_from_file(request.form.get('collection'), dump_path)
+            key = os.environ.get('ENCRYPT_KEY')
+            decrypt_and_import(dump_path, key, request.form.get('collection'), request.form.get('cypher'))
             return f"Коллекция {request.form.get('collection')} импортирована из файла {request.form.get('document')}"
         else:
             return ('fail', 500)

@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Файлы{% endblock %}
+{% block title %}Импорт{% endblock %}
 
 {% block content %}
 
@@ -20,6 +20,10 @@
                     <label for="import_document" class="form-label">Импоритруемый файл</label>
                     <select id="import_document" name="import_document" class="form-select form-select-lg">
                     </select>                  
+                </div>
+                <div class="mb-3">
+                    <label for="cypher" class="form-label">Расшифровать</label>
+                    <input type='checkbox' id="cypher" name="cypher" class="form-check"/>
                 </div>
                 <button id="import" type="submit" class="btn btn-lg btn-primary">Импортировать</button>
             </form>
@@ -56,6 +60,7 @@ $(function() {
         var data = {
             'collection': $("#collection").val(),
             'document': $("#import_document").val(),
+            'cypher': $("#cypher").is(':checked')
         }
 
             

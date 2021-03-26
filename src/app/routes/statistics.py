@@ -136,8 +136,6 @@ def course_tasks_statistics(course_id):
             titles=tasks.task_name)
     
 
-
-
 @bp.route('/course_score/<course_id>', methods=['GET'])
 @login_required
 def course_score(course_id):

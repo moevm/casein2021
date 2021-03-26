@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Файлы{% endblock %}
+{% block title %}Экспорт{% endblock %}
 
 {% block content %}
 
@@ -14,7 +14,11 @@
                         {% for collection in collections %}
                             <option value="{{ collection }}">{{ collection }}</option>
                         {% endfor %}
-                      </select>                  
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="cypher" class="form-label">Зашифровать</label>
+                    <input type='checkbox' id="cypher" name="cypher" class="form-check"/>
                 </div>
                 <button id="export" type="submit" class="btn btn-lg btn-primary">Экспортировать</button>
             </form>
@@ -34,8 +38,9 @@
         event.preventDefault()
         var data = {
             'collection': $("#collection").val(),
-            'document': $("#import_document").val(),
+            'cypher': $("#cypher").is(':checked'),
         }
+        console.log(data)
 
             
         $.ajax({
@@ -44,11 +49,11 @@
             contenType: 'application/json',
             data: data,
             success: function(resp){
-                $("#import").html("Успешно импортировано")
+                $("#export").html("Успешно экспортировано")
                 $('#success').innerHtml=resp
             },
             error: function(resp){
-                $("#import").html("Что-то пошло не так! Попробуйте позже")
+                $("#export").html("Что-то пошло не так! Попробуйте позже")
             },
         });
     })
