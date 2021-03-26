@@ -35,6 +35,8 @@ def course_create():
 def course_page(course_id):
     course = DBManager.get_course(course_id)
     last_task = Solution.objects(user=current_user.pk, course=course_id).order_by('-datetime').first()
+    if last_task:
+        last_task = last_task.task._id
     return render_template("course_id.html", course=course, last_task=last_task) if course else (f'Курс {course_id} не найден', 404)
 
 

@@ -9,6 +9,13 @@
         <div class="col-md-12 col-lg-12 py-6 text-sm-start text-center">
             <h3 class="mt-6 mb-sm-4 display-2 fw-semi-bold lh-sm fs-4 fs-lg-6 fs-xxl-8">Статистика</h3>
             <a href="{{url_for('statistics.courses_statistics')}}" class="btn btn-lg btn-secondary bg-gradient">Статистика пользователей по курсам</a>
+
+            <h4>Статистика по курсу</h3>
+            <ul>
+                {% for course in courses %}
+                    <li> <a href="{{url_for('statistics.course_tasks_statistics', course_id=course._id)}}">{{course.name}}</a> </li>
+                {% endfor %}
+            </ul>
         </div>
     </div>
 </div>
