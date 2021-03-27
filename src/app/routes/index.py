@@ -72,7 +72,7 @@ def compute_big_five(user):
     res = tasks[['direction','score']] \
         .groupby('direction') \
         .mean()
-    res.score = (res.loc[:, 'score'] * 25).astype(int) # / 5 * 100
+    res.score = (res.loc[:, 'score'] * 25).astype(int) # / 4 (max value) * 100
     logger.error(f'{res}')
     return res
 

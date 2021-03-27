@@ -88,6 +88,9 @@ def get_users_tasks_for_course(course_id):
 @login_required
 @roles_required('admin')
 def course_tasks_statistics(course_id):
+    course = Course.objects(_id=course_id).only('name').first()
+    if not course:
+        return (f"Неверный id курса", 400)
     solutions = Solution.objects.aggregate(get_users_tasks_for_course(course_id))
     solutions = pd.DataFrame(solutions)
     logger.error(f'solutions: {list(solutions)}')
@@ -106,9 +109,10 @@ def course_tasks_statistics(course_id):
     tasks = pd.DataFrame(tasks)
     logger.error(f'tasks: {list(tasks)}')
     
+    
     if solutions.shape[0] > 0:
         solution_stat = solutions \
-            .merge(users, how='outer', on='user_id') \
+            .merge(users, how='inner', on='user_id') \
             .merge(tasks, how='outer', on='task_id') \
             [['score','user_name','task_name']]
         logger.error('stat')
@@ -121,13 +125,15 @@ def course_tasks_statistics(course_id):
         return render_template('statistics/course_statistics.html', 
             table=solutoin_pivot.values, 
             users=solutoin_pivot.index.values.tolist(), 
-            titles=list(solutoin_pivot))
+            titles=list(solutoin_pivot),
+            course_name=course.name)
     else:
 
         return render_template('statistics/course_statistics.html', 
             table=[[0]*tasks.shape[0]]*users.shape[0], 
             users=users.user_name,
-            titles=tasks.task_name)
+            titles=tasks.task_name,
+            course_name=course.name)
     
 
 @bp.route('/course_score/<course_id>', methods=['GET'])
