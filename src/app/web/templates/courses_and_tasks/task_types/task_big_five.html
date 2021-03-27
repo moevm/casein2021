@@ -1,7 +1,7 @@
 {% extends 'courses_and_tasks/task_create.html' %}
 {% block task_type %}
     <h1>BIG FIVE</h1>
-    {% if task_type == 'big_five'%}
+    {% if task_type == 'bfive'%}
         <div id='task_check'>
             <ul id="task_check_list" class="list-group">
                 <li style="list-style-type: none;" class="d-flex justify-content-start mb-2">
@@ -26,6 +26,10 @@
                 </li>
             </ul>
         </div>
+        <div class="mb-3">
+            <label for="inverse" class="form-label">Инвертировать влияение?</label>
+            <input type='checkbox' id="inverse" name="inverse" class="form-check"/>
+        </div>
     {% endif %}
 {% endblock %}
 
@@ -42,7 +46,7 @@
                     'condition': $("#condition").val(),
                     'score': $("#score").val(),
                     'task_type': $('#task_type').val(),
-                    'check': JSON.stringify({})
+                    'check': JSON.stringify({'inverse': +($("#inverse").is(':checked'))})
 				}
             console.log(data)
                 

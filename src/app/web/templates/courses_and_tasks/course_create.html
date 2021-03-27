@@ -33,7 +33,7 @@
                                 <div class="mb-3">
                                     <li>
                                     <h5>{{task.name}}</h5>
-                                    <a href="{{url_for('course.task_course_update', course_id=course._id, task_id=task._id)}}" target="_self">Редактировать задание</a>
+                                    <a href="{{url_for('course.task_course_update', course_id=course._id, task_id=task._id, task_type=task.task_type)}}" target="_self">Редактировать задание</a>
                                     </li>
                                 </div>
                             {% endfor %}

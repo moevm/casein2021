@@ -14,7 +14,7 @@ bp = Blueprint('course', __name__, url_prefix='/course')
 import logging
 logger = logging.getLogger('root')
 
-TASK_TYPES = ['test', 'big_five']
+TASK_TYPES = ['test', 'bfive']
 
 @bp.route('/')
 @login_required
@@ -167,7 +167,7 @@ def task_course_update(course_id, task_id):
                 template = None
                 if task_type == 'test':
                     template = "courses_and_tasks/task_types/task_test.html"
-                elif task_type == 'big_five':
+                elif task_type == 'bfive':
                     template = "courses_and_tasks/task_types/task_big_five.html"
                 else:
                     return f"Неверный тип задания", 400
@@ -182,26 +182,20 @@ def task_course_update(course_id, task_id):
         logger.error(f'task_info: {task_info}')
         if task_info['task_type'] == 'test':
             task_info['check'] = {'test': json_loads(task_info['check'])}
+        elif task_info['task_type'] == 'bfive':
+            task_info['check'] = json_loads(task_info['check'])
         logger.error(f'task_info2: {task_info}')
-        obj = {
-            '_id':task_info.get('_id'),
-            'name':task_info.get('name'),
-            'condition':task_info.get('condition'),
-            'task_type':task_info.get('task_type'),
-            'score':task_info.get('score'),
-            'check':task_info.get('check')
-        }
-        task = Task.from_object(obj)
+        
+        task = Task.from_object(task_info)
         logger.error(f'task: {task}')
         task.save()
         logger.error(f'saved task')
-        # course = DBManager.get_course(course_id)
-        # logger.error(f'course: {course}')
-        # logger.error(f'in course: {task in course.tasks}')
-        # if task in course.tasks:
-        #     return 'задача в курсе'
-        # else:
-        #     course.tasks.append(task)
-        #     course.save()
-        #     return 'добавили в курс'
-        return 'err', 400
+        course = DBManager.get_course(course_id)
+        logger.error(f'course: {course}')
+        logger.error(f'in course: {task in course.tasks}')
+        if task in course.tasks:
+            return 'задача в курсе'
+        else:
+            course.tasks.append(task)
+            course.save()
+            return 'добавили в курс'
