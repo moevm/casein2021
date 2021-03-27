@@ -15,6 +15,12 @@ import logging
 logger = logging.getLogger('root')
 
 TASK_TYPES = ['test', 'bfive']
+BIG_FIVE_DIRECTIONS = [
+    'Экстраверсия', 
+    'Склонность к согласию', 
+    'Сознательность', 
+    'Негативная эмоциональность', 
+    'Открытость к новым знаниям']
 
 @bp.route('/')
 @login_required
@@ -54,14 +60,21 @@ def task_page(course_id, task_id):
     next_url = url_for('course.task_page', course_id=course_id, task_id=next_task) \
         if next_task else url_for('course.course_page', course_id=course_id)
     
-    return render_template(
-        "courses_and_tasks/task_passing.html", 
-        course=course, 
-        task=task, 
-        next_url=next_url
-        ) \
-        if course and task and task in course.tasks \
-        else (f'Задача {task_id} в курсе {course_id} не найдена', 404)
+    if course and task and task in course.tasks:
+        if task.task_type == 'test':
+            return render_template(
+                "courses_and_tasks/passing_task_types/task_test.html", 
+                course=course, 
+                task=task, 
+                next_url=next_url)
+        elif task.task_type == 'bfive':
+            return render_template(
+                "courses_and_tasks/passing_task_types/task_big_five.html", 
+                course=course, 
+                task=task, 
+                next_url=next_url)
+    else:
+        return(f'Задача {task_id} в курсе {course_id} не найдена', 404)
 
 
 @bp.route('/check/<course_id>/<task_id>', methods=['POST'])
@@ -71,37 +84,54 @@ def task_check(course_id, task_id):
     task = DBManager.get_task(task_id)
     user_answer = json_loads(request.form['answer'])
     result = None
+    score = 1
     if course and task:
-        if task.task_type == 'test':
-            true_ans = [answer[0] for answer in task.check['test']['answers']]
-            user_ans = user_answer
-            result = (true_ans == user_ans)
-        solution = Solution(course=course, task=task, user=current_user._get_current_object(), score=result * task.score, datetime=datetime.datetime.utcnow())
-        solution.save()
-        return {'result': result}
+        if task.task_type in TASK_TYPES:
+            need_save = True
+            if task.task_type == 'test':
+                true_ans = [answer[0] for answer in task.check['test']['answers']]
+                user_ans = user_answer
+                result = (true_ans == user_ans)
+                score = result * task.score
+            elif task.task_type == 'bfive':
+                logger.error(f'user ans: {user_answer}')
+                result = 'ok'
+                score = user_answer
+                solution = Solution.objects(course=course, task=task, user=current_user._get_current_object())
+                if solution:
+                    need_save=False
+                    solution.update(set__datetime=datetime.datetime.utcnow(), set__score=score)
+                if need_save:
+                    solution = Solution(course=course, task=task, user=current_user._get_current_object(), score=score, datetime=datetime.datetime.utcnow())
+                    solution.save()
+            else:
+                return (f'Неверный тип задачи', 400)
+            return {'result': result}
+        else:
+            return (f'Неверный тип задачи', 400)
     else:
         return (f'Задача {task_id} в курсе {course_id} не найдена', 404)
 
 
-@bp.route('/check/<course_id>', methods=['POST'])
-@login_required
-def course_check(course_id):
-    course = DBManager.get_course(course_id)
-    answers = json_loads(request.form['answers'])
-    result = []
-    if course:
-        for index, task in enumerate(course.tasks):
-            res = None
-            if task.task_type == 'test':
-                true_ans = [answer[0] for answer in task.check['test']['answers']]
-                user_ans = answers[index][1]
-                res = (true_ans == user_ans)
-                result.append(res)
-            solution = Solution(course=course, task=task, user=current_user._get_current_object(), score=res * task.score)
-            solution.save()
-        return {'result': result}
-    else:
-        return f"Курс {course_id} не найден", 404
+# @bp.route('/check/<course_id>', methods=['POST'])
+# @login_required
+# def course_check(course_id):
+#     course = DBManager.get_course(course_id)
+#     answers = json_loads(request.form['answers'])
+#     result = []
+#     if course:
+#         for index, task in enumerate(course.tasks):
+#             res = None
+#             if task.task_type == 'test':
+#                 true_ans = [answer[0] for answer in task.check['test']['answers']]
+#                 user_ans = answers[index][1]
+#                 res = (true_ans == user_ans)
+#                 result.append(res)
+#             solution = Solution(course=course, task=task, user=current_user._get_current_object(), score=res * task.score)
+#             solution.save()
+#         return {'result': result}
+#     else:
+#         return f"Курс {course_id} не найден", 404
 
 
 @bp.route('/update/<course_id>', methods=['GET', 'POST'])
@@ -156,7 +186,6 @@ def task_course_create(course_id):
 @login_required
 @roles_required('admin')
 def task_course_update(course_id, task_id):
-    logger.error(f'method: {request.method}')
     if request.method == 'GET':
         if not DBManager.get_course(course_id):
             return f"Курс {course_id} не найден", 404
@@ -166,12 +195,18 @@ def task_course_update(course_id, task_id):
             if request.args.get('task_type') in TASK_TYPES:
                 template = None
                 if task_type == 'test':
-                    template = "courses_and_tasks/task_types/task_test.html"
+                    return render_template(
+                        "courses_and_tasks/create_task_types/task_test.html", 
+                        task=task, course_id=course_id, 
+                        task_id=task_id, task_type=task_type)
                 elif task_type == 'bfive':
-                    template = "courses_and_tasks/task_types/task_big_five.html"
+                    return render_template(
+                        "courses_and_tasks/create_task_types/task_big_five.html",
+                        task=task, course_id=course_id, 
+                        task_id=task_id, task_type=task_type, 
+                        big_five_directions=BIG_FIVE_DIRECTIONS)
                 else:
                     return f"Неверный тип задания", 400
-                return render_template(template, task=task, course_id=course_id, task_id=task_id, task_type=task_type)
             else:
                 return f"Неверный тип задания", 400
         else:
@@ -179,20 +214,15 @@ def task_course_update(course_id, task_id):
     else:
         task_info = request.form.to_dict()
         task_info['_id'] = task_id
-        logger.error(f'task_info: {task_info}')
         if task_info['task_type'] == 'test':
             task_info['check'] = {'test': json_loads(task_info['check'])}
         elif task_info['task_type'] == 'bfive':
             task_info['check'] = json_loads(task_info['check'])
-        logger.error(f'task_info2: {task_info}')
         
         task = Task.from_object(task_info)
-        logger.error(f'task: {task}')
         task.save()
-        logger.error(f'saved task')
+        logger.error(task)
         course = DBManager.get_course(course_id)
-        logger.error(f'course: {course}')
-        logger.error(f'in course: {task in course.tasks}')
         if task in course.tasks:
             return 'задача в курсе'
         else:

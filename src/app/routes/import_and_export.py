@@ -104,12 +104,13 @@ def init_tasks_and_courses():
     if not os.path.exists(current_app.config['DUMP_FOLDER']):
         os.makedirs(current_app.config['DUMP_FOLDER'])
     key = os.environ.get('ENCRYPT_KEY').encode('utf-8')
-    if len(Course.objects) == 0 and len(Task.objects) == 0:
-        courses = os.path.join(current_app.config['DUMP_FOLDER'], 'init_course_enc.json')
-        tasks = os.path.join(current_app.config['DUMP_FOLDER'], 'init_task_enc.json')
-        if os.path.exists(courses) and os.path.exists(tasks):
-            decrypt_and_import(tasks, key, 'task')
-            decrypt_and_import(courses, key, 'course')
+    courses = os.path.join(current_app.config['DUMP_FOLDER'], 'init_course_enc.json')
+    tasks = os.path.join(current_app.config['DUMP_FOLDER'], 'init_task_enc.json')
+    solutions = os.path.join(current_app.config['DUMP_FOLDER'], 'init_solution_enc.json')
+    if os.path.exists(courses) and os.path.exists(tasks) and os.path.exists(solutions):
+        decrypt_and_import(tasks, key, 'task')
+        decrypt_and_import(solutions, key, 'solution')
+        decrypt_and_import(courses, key, 'course')
 
 
 

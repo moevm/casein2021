@@ -30,12 +30,6 @@ tasks_score_aggregate = [
     { '$project': { '_id':1, 'score': 1 } }
 ]
 
-@bp.before_app_first_request
-def create_temp_folder():
-    if not os.path.exists(current_app.config['TMP_FOLDER']):
-        os.makedirs(current_app.config['TMP_FOLDER'])
-
-
 @bp.route('/', methods=['GET'])
 @login_required
 @roles_required('admin')

@@ -2,6 +2,14 @@
 {% block task_type %}
     <h1>BIG FIVE</h1>
     {% if task_type == 'bfive'%}
+        <div class="mb-4">
+            <select id='big_five_direction' class="form-select form-select-lg">
+                {% for direction in big_five_directions %}
+                    <option value='{{direction}}' name=='{{direction}}'>{{direction}}</option>
+                {% endfor %}
+            </select>
+        </div>
+
         <div id='task_check'>
             <ul id="task_check_list" class="list-group">
                 <li style="list-style-type: none;" class="d-flex justify-content-start mb-2">
@@ -28,7 +36,7 @@
         </div>
         <div class="mb-3">
             <label for="inverse" class="form-label">Инвертировать влияение?</label>
-            <input type='checkbox' id="inverse" name="inverse" class="form-check"/>
+            <input type='checkbox' id="inverse" name="inverse" class="form-check" {% if task and task.check["inverse"] %} checked {% endif %}/>
         </div>
     {% endif %}
 {% endblock %}
@@ -37,6 +45,9 @@
 <script>
     $(function() {
         $('#score').val(1)
+        {% if task %}
+            $('#big_five_direction').val("{{task.check['direction']}}")
+        {% endif %}
         $("#task_form").on('submit', function (event) {
             $("#save_task").html("<span class='spinner-border spinner-border-sm'></span> Сохранение")
             event.preventDefault()
@@ -44,9 +55,12 @@
             var data = {
 					'name': $("#name").val(),
                     'condition': $("#condition").val(),
-                    'score': $("#score").val(),
+                    'score': 1,
                     'task_type': $('#task_type').val(),
-                    'check': JSON.stringify({'inverse': $("#inverse").is(':checked')})
+                    'check': JSON.stringify({
+                        'inverse': $("#inverse").is(':checked'),
+                        'direction': $('#big_five_direction').val()
+                    })
 				}
             console.log(data)
                 
@@ -56,7 +70,7 @@
 				contenType: 'application/json',
 				data: data,
 				success: function(resp){
-                    window.location.href="{{url_for('course.course_update', course_id=course_id)}}"
+                    // window.location.href="{{url_for('course.course_update', course_id=course_id)}}"
 				},
 				error: function(resp){
                     $("#save_task").html("Что-то пошло не так! Попробуйте позже")

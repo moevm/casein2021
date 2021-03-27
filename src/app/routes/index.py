@@ -1,6 +1,8 @@
+import pandas as pd
+
 from random import randint
 
-from app.db_models import User, Role, Solution, DBManager
+from app.db_models import User, Role, Solution, Course, DBManager
 from flask import Blueprint, render_template, request, redirect, render_template, current_app
 from flask_security import login_required, current_user, roles_required, LoginForm, url_for_security
 
@@ -48,10 +50,33 @@ import logging
 
 logger = logging.getLogger('root')
 
-@bp.route('/user/<user_id>')
-@login_required
-def user_page(user_id):
-    user = DBManager.get_user(user_id)
+def compute_big_five(user):
+    course = Course.objects(name='Большая пятерка').first()
+    big_five_user = [
+        {'$match':{'course':course._id, 'user':user.pk}},
+        {'$group': {"_id":'$task', 'datetime':{'$max':"$datetime"}, 'score': {'$first':'$score'}}},
+        {'$project': {'_id':1, 'score':1}}
+    ]
+    user_response = pd.DataFrame(Solution.objects.aggregate(big_five_user))
+    if len(course.tasks) != user_response.shape[0]:
+        logger.error('Пройдены не все задачи')
+        return
+    out = map(lambda task: {
+            '_id': task._id,
+            'inverse': task.check.get('inverse'),
+            'direction': task.check.get('direction')
+        }, course.tasks)
+    tasks = pd.DataFrame(out).merge(user_response, how='outer', on='_id')
+    tasks.loc[tasks['inverse'], 'score'] = 4-tasks.loc[tasks['inverse'], 'score']
+    logger.error(f'{tasks}')
+    res = tasks[['direction','score']] \
+        .groupby('direction') \
+        .mean()
+    res.score = (res.loc[:, 'score'] * 25).astype(int) # / 5 * 100
+    logger.error(f'{res}')
+    return res
+
+def compute_user_statistic(user):
     aggregation_user_course_stat = [
         {'$match': {'user': user.pk}},
         {'$group': {'_id':{'course':"$course",'task':"$task"}, 'max':{'$max':"$score"}}},
@@ -59,6 +84,14 @@ def user_page(user_id):
     ]
     res = Solution.objects.aggregate(aggregation_user_course_stat)
     logger.error(f'res: {list(res)}')
+    return res
+
+@bp.route('/user/<user_id>')
+@login_required
+def user_page(user_id):
+    user = DBManager.get_user(user_id)
+    # res = compute_user_statistic(user)
+    compute_big_five(user)
     return render_template("user_id.html", user=user) if user else (f'Пользователь {user_id} не найден', 404)
 
 
