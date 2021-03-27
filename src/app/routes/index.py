@@ -8,8 +8,7 @@ from flask_security import login_required, current_user, roles_required, LoginFo
 bp = Blueprint('index', __name__)
 
 @bp.before_app_first_request
-def init_my_blueprint():
-
+def init_roles_and_users():
     if not current_app.user_datastore.get_user('sotrudnik@rosatom.ru'):
         current_app.user_datastore.create_role(name="user")
         current_app.user_datastore.create_user(email='sotrudnik@rosatom.ru',password='sotrudnik', full_name='sotrudnik name', roles=['user'])
@@ -19,7 +18,7 @@ def init_my_blueprint():
     if not current_app.user_datastore.get_user('adapter@rosatom.ru'):
         current_app.user_datastore.create_role(name="adapter")
         current_app.user_datastore.create_user(email='adapter@rosatom.ru',password='adapter', full_name='adapter name', roles=['adapter'])
-    
+
 
 @bp.context_processor
 def login_context():

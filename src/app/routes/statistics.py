@@ -1,8 +1,9 @@
+import numpy as np
 import pandas as pd
 import os
 from flask import Blueprint, current_app, send_from_directory, render_template
 from flask_security import login_required, roles_required
-from app.db_models import Course, Task, User, Solution, DBManager
+from app.db_models import Course, Task, User, Role, Solution, DBManager
 import logging
 
 logger = logging.getLogger('root')
@@ -15,10 +16,7 @@ users_course_aggregate = [
     {'$replaceWith': {'user_id':"$_id.user", 'course_id':"$_id.course", 'score':"$sum"} },
     {'$set': {'user_id': {'$function': {'body': 'function(i) { return i.toString() }', 'args': [ "$user_id" ], 'lang': "js"}}}}
 ]
-users_aggregate = [
-    {'$project': {'_id' : 1 , 'full_name' : 1}},
-    {'$set': {'_id': {'$function': { 'body': 'function(i) { return i.toString() }', 'args': [ "$_id" ], 'lang': "js"}}}}
-]
+
 course_aggregate = [
     {'$project': {'_id' : 1 , 'name' : 1}},
 ]
@@ -41,11 +39,8 @@ def create_temp_folder():
 @bp.route('/', methods=['GET'])
 @login_required
 @roles_required('admin')
-def users_list():
-    with open(os.path.join(current_app.config['TMP_FOLDER'], 'test.txt'), 'w', encoding='utf-8') as file:
-        for task in Task.objects.only('name'):
-            file.write(str(task.to_json()))
-    return send_from_directory(current_app.config['TMP_FOLDER'], 'test.txt')
+def statistics_main():
+    return render_template('statistics/statistics_main.html', courses=Course.objects(name__ne="").only('_id', 'name'))
 
 
 @bp.route('/courses', methods=['GET'])
@@ -53,22 +48,93 @@ def users_list():
 @roles_required('admin')
 def courses_statistics():
     solutions = Solution.objects.aggregate(users_course_aggregate)
+    user_role_id = Role.objects(name='user').first().pk
+    
+    users_aggregate = [
+        { '$match': { 'roles': {'$in' :[user_role_id, '$roles']} }},
+        {'$set': {'_id': {'$function': { 'body': 'function(i) { return i.toString() }', 'args': [ "$_id" ], 'lang': "js"}}}}
+    ]
     users = User.objects.aggregate(users_aggregate)
     courses = Course.objects.aggregate(course_aggregate)
 
-    solutions_df = pd.DataFrame(solutions)
-    users_df = pd.DataFrame(users).rename(columns={'_id':'user_id', 'full_name':'user_name'})
     courses_df = pd.DataFrame(courses).rename(columns={'_id':'course_id', 'name':'course_name'})
+    courses_df = courses_df[courses_df.course_name != ""]
+    users_df = pd.DataFrame(users).rename(columns={'_id':'user_id', 'full_name':'user_name'})
+    solutions_df = pd.DataFrame(solutions)
+    if solutions_df.shape[0] > 0:
+        solution_stat = solutions_df \
+            .merge(users_df, how='outer', on='user_id') \
+            .merge(courses_df, how='outer', on='course_id') \
+            [['score','user_name','course_name']]
+        solutoin_pivot = pd.pivot_table(solution_stat, 'score', 'user_name', 'course_name', fill_value=0, dropna=False)
+        diff = set(users_df.user_name).difference(set(solutoin_pivot.index))
+        to_conc = pd.DataFrame(np.zeros((len(diff), solutoin_pivot.shape[1])), index=diff, columns=list(solutoin_pivot), dtype=np.int64)
+        solutoin_pivot = solutoin_pivot.append(to_conc)
+        return render_template('statistics/course_statistics.html', 
+            table=solutoin_pivot.values, 
+            users=solutoin_pivot.index.values.tolist(), 
+            titles=list(solutoin_pivot))
+    else:
+        users = list(map(lambda x: x.get('full_name'), users))
+        courses = list(map(lambda x: x.get('name'), courses))
+        return render_template('statistics/course_statistics.html', 
+            table=[[0]*courses_df.shape[0]]*users_df.shape[0], 
+            users=users_df.user_name,
+            titles=courses_df.course_name)
 
-    solution_stat = solutions_df.merge(users_df, how='right', on='user_id').merge(courses_df, how='right', on='course_id')[['score','user_name','course_name']]
+def get_users_tasks_for_course(course_id):
+    return [
+        {'$match': {'course': course_id}},
+        {'$group': {'_id':{'user_id':"$user", 'task_id':"$task"}, 'max':{'$max':"$score"}}},
+        {'$replaceWith': {'user_id':"$_id.user_id", 'task_id':"$_id.task_id", 'score':"$max"}},
+        {'$set': {'user_id': { '$function': { 'body': 'function(i) { return i.toString() }', 'args': [ "$user_id" ], 'lang': "js"}}}}
+    ]
 
-    solutoin_pivot = pd.pivot_table(solution_stat, 'score', 'user_name', 'course_name', fill_value=0)
+@bp.route('/course_statisic/<course_id>', methods=['GET'])
+@login_required
+@roles_required('admin')
+def course_tasks_statistics(course_id):
+    solutions = Solution.objects.aggregate(get_users_tasks_for_course(course_id))
+    solutions = pd.DataFrame(solutions)
+    logger.error(f'solutions: {list(solutions)}')
     
-    return render_template('course_statistics.html', 
-        table=solutoin_pivot.values, 
-        users=solutoin_pivot.index.values.tolist(), 
-        courses=list(solutoin_pivot))
+    user_role_id = Role.objects(name='user').first().pk
+    users_aggregate = [
+        { '$match': { 'roles': {'$in' :[user_role_id, '$roles']} }},
+        { '$project': {'_id': 1, 'full_name':1}},
+        { '$set': {'_id': {'$function': { 'body': 'function(i) { return i.toString() }', 'args': [ "$_id" ], 'lang': "js"}}}}
+    ]
+    users = User.objects.aggregate(users_aggregate)
+    users = pd.DataFrame(users).rename(columns={'_id':'user_id', 'full_name':'user_name'})
+    logger.error(f'users: {list(users)}')
 
+    tasks = [{'task_id': it["_id"], 'task_name':it["name"]} for it in Course.objects(_id=course_id)[0].tasks]
+    tasks = pd.DataFrame(tasks)
+    logger.error(f'tasks: {list(tasks)}')
+    
+    if solutions.shape[0] > 0:
+        solution_stat = solutions \
+            .merge(users, how='outer', on='user_id') \
+            .merge(tasks, how='outer', on='task_id') \
+            [['score','user_name','task_name']]
+        logger.error('stat')
+        logger.error(f'{list(solution_stat)}')
+        logger.error(f'{solution_stat}')
+        solutoin_pivot = pd.pivot_table(solution_stat, 'score', 'user_name', 'task_name', fill_value=0, dropna=False)
+        diff = set(users.user_name).difference(set(solutoin_pivot.index))
+        to_conc = pd.DataFrame(np.zeros((len(diff), solutoin_pivot.shape[1])), index=diff, columns=list(solutoin_pivot), dtype=np.int64)
+        solutoin_pivot = solutoin_pivot.append(to_conc)
+        return render_template('statistics/course_statistics.html', 
+            table=solutoin_pivot.values, 
+            users=solutoin_pivot.index.values.tolist(), 
+            titles=list(solutoin_pivot))
+    else:
+
+        return render_template('statistics/course_statistics.html', 
+            table=[[0]*tasks.shape[0]]*users.shape[0], 
+            users=users.user_name,
+            titles=tasks.task_name)
+    
 
 @bp.route('/course_score/<course_id>', methods=['GET'])
 @login_required
@@ -77,7 +143,7 @@ def course_score(course_id):
     return str(sum(map(lambda x: x.score, courses.tasks)))
 
 
-@bp.route('/courses_score', methods=['GET'])
+@bp.route('/courses_sum_score', methods=['GET'])
 @login_required
 def user_statistic():
     courses = Course.objects.aggregate(course_score_aggregate)
@@ -87,5 +153,5 @@ def user_statistic():
     
     scores_df = tasks_df.merge(courses_df, how='inner', on='task_id')
     res = scores_df.groupby('course_id').sum('score')
-        
+    logger.error(res)
     return 'ok'

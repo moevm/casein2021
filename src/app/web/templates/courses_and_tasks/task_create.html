@@ -25,7 +25,7 @@
                     <label for="condition" class="form-label mt-1">Описание задачи</label>
                     <textarea id='condition' name='condition' class="form-control" required>{% if task %}{{task.condition}}{% endif %}</textarea>
                     <label for="score" class="form-label mt-1">Баллов</label>
-                    <input type='number' id='score' name='score' value='{% if task %}{{task.score}}{% endif %}' class="form-control" required>
+                    <input type='number' id='score' name='score' value='{% if task %}{{task.score}}{% endif %}' class="form-control" min="1" required>
                     <label for="task_type" class="form-label mt-1">Тип задачи</label>
                     <select id="task_type" name="task_type" class="form-select form-select-lg">
                         <option value='{{task_type}}'>{% if task_type == "test" %}Тестовый {% else %} {{ task_type }}{% endif %}</option>
@@ -45,13 +45,13 @@
                                 {% if task and task.check['test']['answers'] %}
                                     {% for (answer, text) in task.check['test']['answers'] %}
                                         <li style="list-style-type: none;" class="d-flex justify-content-start mb-2">
-                                                    <input class="form-check-input mt-3 me-2" type="{{test_type}}" name="answer" {% if answer %}checked{% endif %}>    
-                                                    <input type="text" class="form-control" value="{{text}}" {% if test_type == 'radio' %}required{% endif %}>
+                                                    <input class="form-check-input mt-3 me-2" type="{{test_type}}" name="answer" {% if answer %}checked{% endif %} {% if test_type == 'radio' %}required{% endif %}>    
+                                                    <input type="text" class="form-control" value="{{text}}" required>
                                                 </li>
                                     {% endfor %}
                                 {% else %}
                                 <li style="list-style-type: none;" class="d-flex justify-content-start mb-2">
-                                            <input class="form-check-input mt-3 me-2" type="radio" name="answer" required>
+                                            <input class="form-check-input mt-3 me-2" type="radio" name="answer" {% if test_type == 'radio' %}required{% endif %}>
                                             <input class="form-control" type="text" required>
                                         </li>
                                 {% endif %}
@@ -81,6 +81,7 @@
             $("#task_check_list li").each(function() {
                 var [btn, ans_text] = $(this).children()
                 btn.type = $('#answer_type').val()
+                btn.required = ( $('#answer_type').val() === 'radio')
             })
         });
 

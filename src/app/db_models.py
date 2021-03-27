@@ -45,7 +45,7 @@ class Task(me.Document):
     condition = me.StringField()
     task_type = me.StringField(max_length=5)
     score = me.IntField(default=1)
-    check = me.DictField() 
+    check = me.DictField()
 
     @staticmethod
     def from_object(task_object):

@@ -1,3 +1,4 @@
+import datetime
 import pandas as pd
 
 from uuid import uuid4
@@ -17,7 +18,7 @@ logger = logging.getLogger('root')
 @bp.route('/')
 @login_required
 def course_index():
-    return render_template("course.html", courses=Course.objects(name__ne=""))
+    return render_template("courses_and_tasks/course.html", courses=Course.objects(name__ne=""))
 
 
 @bp.route('/create')
@@ -26,15 +27,59 @@ def course_index():
 def course_create():
     new_course = Course(_id=str(uuid4()))
     new_course.save()
-    return redirect(url_for('course.course_update', course_id=new_course._id, new=True))
+    return redirect(url_for('courses_and_tasks/course.course_update', course_id=new_course._id, new=True))
 
 
 @bp.route('/<course_id>')
 @login_required
 def course_page(course_id):
     course = DBManager.get_course(course_id)
-    return render_template("course_id.html", course=course) if course else (f'Курс {course_id} не найден', 404)
+    last_task = Solution.objects(user=current_user.pk, course=course_id).order_by('-datetime').first()
+    if last_task:
+        last_task = last_task.task._id
+    return render_template("courses_and_tasks/course_id.html", course=course, last_task=last_task) if course else (f'Курс {course_id} не найден', 404)
 
+
+@bp.route('/<course_id>/task/<task_id>')
+@login_required
+def task_page(course_id, task_id):
+    course = DBManager.get_course(course_id)
+    task = DBManager.get_task(task_id)
+    
+    task_index = course.tasks.index(task)
+    prev_task = course.tasks[task_index-1]._id if task_index > 0 else None
+    next_task = course.tasks[task_index+1]._id if task_index < len(course.tasks)-1 else None
+    
+    next_url = url_for('course.task_page', course_id=course_id, task_id=next_task) \
+        if next_task else url_for('course.course_page', course_id=course_id)
+    
+    return render_template(
+        "courses_and_tasks/task_passing.html", 
+        course=course, 
+        task=task, 
+        next_url=next_url
+        ) \
+        if course and task and task in course.tasks \
+        else (f'Задача {task_id} в курсе {course_id} не найдена', 404)
+
+
+@bp.route('/check/<course_id>/<task_id>', methods=['POST'])
+@login_required
+def task_check(course_id, task_id):
+    course = DBManager.get_course(course_id)
+    task = DBManager.get_task(task_id)
+    user_answer = json_loads(request.form['answer'])
+    result = None
+    if course and task:
+        if task.task_type == 'test':
+            true_ans = [answer[0] for answer in task.check['test']['answers']]
+            user_ans = user_answer
+            result = (true_ans == user_ans)
+        solution = Solution(course=course, task=task, user=current_user._get_current_object(), score=result * task.score, datetime=datetime.datetime.utcnow())
+        solution.save()
+        return {'result': result}
+    else:
+        return (f'Задача {task_id} в курсе {course_id} не найдена', 404)
 
 
 @bp.route('/check/<course_id>', methods=['POST'])
@@ -69,14 +114,14 @@ def course_update(course_id):
     if request.method == 'GET':
         course = DBManager.get_course(course_id)
         if course or request.args.get('new'):
-            return render_template("course_create.html", course=course)
+            return render_template("courses_and_tasks/course_create.html", course=course)
         else:
             return f"Курс {course_id} не найден", 404
     else:
         obj = {'_id': course_id, 'name': request.form['name'], 'description': request.form['description']}
         course = Course.from_object(obj)
         course.save()
-        return redirect(f'/course/{course_id}')
+        return redirect(url_for('course.course_page', course_id=course_id))
 
 
 @bp.route('/remove/<course_id>', methods=['GET'])
@@ -108,13 +153,11 @@ def task_course_update(course_id, task_id):
             return f"Курс {course_id} не найден", 404
         task = DBManager.get_task(task_id)
         if task or request.args.get('new'):
-            return render_template("task_create.html", task=task, course_id=course_id, task_id=task_id, task_type=request.args.get('task_type', 'test'))
+            return render_template("courses_and_tasks/task_create.html", task=task, course_id=course_id, task_id=task_id, task_type=request.args.get('task_type', 'test'))
         else:
             return f"Задание {task} не найдено", 404
     else:
         task_info = request.form.to_dict()
-        # logger.error(task_info)
-        # logger.error(task_info.get('score'))
         task_info['_id'] = task_id
         if task_info['task_type'] == 'test':
             task_info['check'] = {'test': json_loads(task_info['check'])}

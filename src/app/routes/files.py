@@ -1,5 +1,7 @@
 import os
 import sys
+import datetime
+import subprocess
 from uuid import uuid4
 from flask import Blueprint, request, flash, redirect, url_for, render_template, current_app, send_from_directory
 from flask_security import login_required, current_user, roles_required
@@ -23,7 +25,7 @@ def create_upload_folder():
 @bp.route('/', methods=['GET', 'POST'])
 @login_required
 def files_list():
-    return render_template("files.html", files=File.objects)
+    return render_template("files/files.html", files=File.objects)
 
 @bp.route('/<file_id>', methods=['GET', 'POST'])
 @login_required
@@ -90,6 +92,6 @@ def update_file(file_id):
         file = DBManager.get_file(file_id)
         if file or request.args.get('new'):
             logger.error(f'GET, is existing: {file}')
-            return render_template("upload_documents.html", file=file)
+            return render_template("files/upload_documents.html", file=file)
         else:
             return f"Файл {file_id} не найден", 404
