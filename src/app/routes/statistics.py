@@ -93,7 +93,6 @@ def course_tasks_statistics(course_id):
         return (f"Неверный id курса", 400)
     solutions = Solution.objects.aggregate(get_users_tasks_for_course(course_id))
     solutions = pd.DataFrame(solutions)
-    logger.error(f'solutions: {list(solutions)}')
     
     user_role_id = Role.objects(name='user').first().pk
     users_aggregate = [
@@ -103,21 +102,16 @@ def course_tasks_statistics(course_id):
     ]
     users = User.objects.aggregate(users_aggregate)
     users = pd.DataFrame(users).rename(columns={'_id':'user_id', 'full_name':'user_name'})
-    logger.error(f'users: {list(users)}')
 
     tasks = [{'task_id': it["_id"], 'task_name':it["name"]} for it in Course.objects(_id=course_id)[0].tasks]
     tasks = pd.DataFrame(tasks)
-    logger.error(f'tasks: {list(tasks)}')
     
-    
+
     if solutions.shape[0] > 0:
         solution_stat = solutions \
             .merge(users, how='inner', on='user_id') \
             .merge(tasks, how='outer', on='task_id') \
             [['score','user_name','task_name']]
-        logger.error('stat')
-        logger.error(f'{list(solution_stat)}')
-        logger.error(f'{solution_stat}')
         solutoin_pivot = pd.pivot_table(solution_stat, 'score', 'user_name', 'task_name', fill_value=0, dropna=False)
         diff = set(users.user_name).difference(set(solutoin_pivot.index))
         to_conc = pd.DataFrame(np.zeros((len(diff), solutoin_pivot.shape[1])), index=diff, columns=list(solutoin_pivot), dtype=np.int64)

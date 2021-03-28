@@ -94,7 +94,6 @@ def task_check(course_id, task_id):
                 result = (true_ans == user_ans)
                 score = result * task.score
             elif task.task_type == 'bfive':
-                logger.error(f'user ans: {user_answer}')
                 result = 'ok'
                 score = user_answer
                 solution = Solution.objects(course=course, task=task, user=current_user._get_current_object())

@@ -68,7 +68,6 @@ def compute_big_five(user):
         }, course.tasks)
     tasks = pd.DataFrame(out).merge(user_response, how='outer', on='_id')
     tasks.loc[tasks['inverse'], 'score'] = 4-tasks.loc[tasks['inverse'], 'score']
-    logger.error(f'{tasks}')
     res = tasks[['direction','score']] \
         .groupby('direction') \
         .mean()

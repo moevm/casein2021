@@ -45,14 +45,10 @@ def export_collection_to_file(collection, filepath, host='mongo:27017', db='data
 
 
 def encrypt_file(filename, key, mode='r'):
-    logger.error(f'{filename}')
-    logger.error(f'{os.path.exists(filename)}')
     with open(filename, mode) as f:
         decrypted = f.read().encode()
-    logger.error(f'{decrypted}')
     f = Fernet(key)
     encrypted = f.encrypt(decrypted)
-    logger.error('finish enc1')
     return encrypted
 
 
@@ -73,27 +69,18 @@ def save_file(filename, string, mode='w'):
 def encrypt_and_export(filepath, key, collection, need_ecrypt=True):
     export_collection_to_file(collection, filepath)
     if (need_ecrypt):
-        logger.error('start enc')
         out = encrypt_file(filepath, key)
         save_file(filepath, out, mode='wb')
-        logger.error('finish enc')
-    
+        
 
 def decrypt_and_import(filepath, key, collection, need_decrypt=True):
     to_read = filepath
-    logger.error(f'to_read: {to_read}')
     if need_decrypt:
         tmp_file = os.path.join(current_app.config['DUMP_FOLDER'], f'{uuid4()}.json')
-        logger.error(f'tmp_file: {tmp_file}')
         out = decrypt_file(filepath, key)
-        logger.error(f'out: {out}')
         save_file(tmp_file, out)
         to_read = tmp_file
-        logger.error(f'to_read(new): {to_read}')
-    logger.error(f'import')
-    logger.error(f'to_read(new): {os.path.exists(to_read)}')
     import_collection_from_file(collection, to_read)
-    logger.error(f'imported')
     
     if need_decrypt:
         os.remove(tmp_file)
@@ -139,9 +126,7 @@ def export_collection():
 @roles_required('admin')
 def import_collection():
     if request.method=='POST':
-        logger.error(f'form:{request.form}') 
         dump_path = os.path.join(current_app.config["DUMP_FOLDER"], request.form.get('document'))
-        logger.error(f'dump: {os.path.exists(dump_path)}, collection: {request.form.get("collection")}')
         if os.path.exists(dump_path) and request.form.get('collection'):
             key = os.environ.get('ENCRYPT_KEY')
             decrypt_and_import(dump_path, key, request.form.get('collection'), request.form.get('cypher'))
