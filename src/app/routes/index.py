@@ -65,6 +65,10 @@ def user_page(user_id):
     if not user:
         return (f'Пользователь {user_id} не найден', 404)
     if request.method == 'GET':
+        if not (current_user.has_role('adapter') 
+            or current_user.has_role('admin') 
+            or current_user == user):
+            return ('Forbidden', 403)
         current_user_has_user_role = any([role['name'] == 'user' for role in user.roles])
         user_adapter = AdapterEmployees.objects(employee=user.pk).first()
         adapter_id = Role.objects(name="adapter").first()
@@ -82,27 +86,19 @@ def user_page(user_id):
             adapters=list(adapters)) \
             if user else (f'Пользователь {user_id} не найден', 404)
     else:
-        logger.error('POSTED')
         employee = AdapterEmployees.objects(employee=user.pk).first()
-        logger.error(f'{employee}')
         if current_user.has_role('adapter'):
-            logger.error('has adapter role')
             if not employee:
                 ad_emp = AdapterEmployees(employee=user.pk, adapter=current_user.pk)
                 ad_emp.save()
-                logger.error(f'{ad_emp}')
                 return 'saved'
             else:
                 return 'У пользователя уже есть адаптер', 400
         elif current_user.has_role('admin'):
-            logger.error('has admin role')
             if not employee:
                 ad_emp = AdapterEmployees(employee=user.pk, adapter=request.form.get('adapter'))
                 ad_emp.save()
-                logger.error(f'{ad_emp}')
             else:
-                # logger.error(employee.employee)
-                # logger.error(employee.adapter)
                 adapter = DBManager.get_user(request.form.get('adapter'))
                 employee.update(set__adapter=adapter)
             return 'saved'
