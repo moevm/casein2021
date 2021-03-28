@@ -27,7 +27,7 @@ def course_index():
 def course_create():
     new_course = Course(_id=str(uuid4()))
     new_course.save()
-    return redirect(url_for('courses_and_tasks/course.course_update', course_id=new_course._id, new=True))
+    return redirect(url_for('course.course_update', course_id=new_course._id, new=True))
 
 
 @bp.route('/<course_id>')

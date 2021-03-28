@@ -34,9 +34,9 @@ class User(me.Document, UserMixin):
                 full_name=user_object.get('full_name'))
 
 
-class AdapterEmployees(me.EmbeddedDocument):
-    user = me.ReferenceField(User)
-    users = me.ListField(me.ReferenceField(User), default=[])
+class AdapterEmployees(me.Document):
+    adapter = me.ReferenceField(User)
+    employee = me.ReferenceField(User)
 
 
 class Task(me.Document):
