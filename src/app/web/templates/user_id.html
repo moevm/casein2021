@@ -37,6 +37,7 @@
         </fieldset>
       </form>
       {% if current_user_has_user_role %}
+        <label>Адаптер</label><br>
         {% if current_user.has_role('admin') %}
           <select id='select_user_adapter' name='select_user_adapter' class="form-select form-select-lg">
             {% for adapter in adapters %}
@@ -52,7 +53,11 @@
           </button>
         {% elif current_user.has_role('adapter') %}
           {% if user_adapter %}
-            <h4>У пользователя уже есть адаптер</h4>
+            {% if user_adapter.adapter.pk == current_user.pk %}
+              <span>Вы адаптер этого сотрудника</span>
+            {% else %}
+              <span>У сотрудника уже есть адаптер</span>
+            {% endif %}
           {% else %}
             <button id='volunteer' class="btn btn-primary">Назначить себя</button>
           {% endif %}

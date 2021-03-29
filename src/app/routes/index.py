@@ -1,8 +1,8 @@
 from random import randint
-
+import pandas as pd
 from app.db_models import User, Role, Solution, Course, AdapterEmployees, DBManager
 from flask import Blueprint, render_template, request, redirect, render_template, current_app
-from flask_security import login_required, current_user, roles_required, LoginForm, url_for_security
+from flask_security import login_required, current_user, roles_required, roles_accepted, LoginForm, url_for_security
 
 
 bp = Blueprint('index', __name__)
@@ -32,9 +32,11 @@ def index():
 
 @bp.route('/users')
 @login_required
-@roles_required('admin')
+@roles_accepted('admin', 'adapter')
 def users_page():
-    return render_template("users.html", users=User.objects())
+    user_role_id = Role.objects(name='user').first().pk
+    users_list = User.objects.aggregate({ '$match': { 'roles': {'$in' :[user_role_id, '$roles']}}})
+    return render_template("users.html", users=users_list)
 
 
 @bp.route('/user/create')
@@ -52,11 +54,13 @@ def get_aggregation_user_course_stat(user):
         {'$group': {'_id':"$_id.course", 'sum':{'$sum':"$max"}}}
     ]
 
+
 def get_aggregation_adapters(adapter_id):
     return [
         { '$match': { 'roles': {'$in' :[adapter_id, '$roles']}}},
         { '$project': {'full_name':1}}
     ]
+
 
 @bp.route('/user/<user_id>', methods=['GET', 'POST'])
 @login_required
@@ -69,7 +73,7 @@ def user_page(user_id):
             or current_user.has_role('admin') 
             or current_user == user):
             return ('Forbidden', 403)
-        current_user_has_user_role = any([role['name'] == 'user' for role in user.roles])
+        checking_user_has_user_role = user.has_role("user")
         user_adapter = AdapterEmployees.objects(employee=user.pk).first()
         adapter_id = Role.objects(name="adapter").first()
         if not adapter_id:
@@ -81,7 +85,7 @@ def user_page(user_id):
         user_courses_stat = Solution.objects.aggregate(get_aggregation_user_course_stat(user))
         return render_template("user_id.html", 
             user=user, 
-            current_user_has_user_role=current_user_has_user_role,
+            current_user_has_user_role=checking_user_has_user_role,
             user_adapter=user_adapter,
             adapters=list(adapters)) \
             if user else (f'Пользователь {user_id} не найден', 404)
@@ -104,8 +108,7 @@ def user_page(user_id):
             return 'saved'
         else:
             return 'Forbidden', 403
-        
-            
+                   
 
 @bp.route('/user/update/<user_id>', methods=['GET', 'POST'])
 @login_required
