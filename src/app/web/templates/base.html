@@ -28,20 +28,23 @@
                 <li class="nav-item px-2"><a class="nav-link fw-medium" href="/course">Курсы</a></li>
                 <li class="nav-item px-2"><a class="nav-link fw-medium" href="/files">Файлы</a></li>
                 {% endif %}
-                {% if current_user.has_role('admin') %}
-                
+                {% if current_user.has_role('admin') or current_user.has_role('adapter') %}
                 <li class="nav-item dropdown">
                   <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    Админ
+                    {% if current_user.has_role('admin') %}
+                      Админ
+                    {% else %}
+                      Адаптер
+                    {% endif %}
                   </a>
                   <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                    <li><a class="dropdown-item" href="/admin" target="_blank">Панель управления</a></li>
-                    <li><a class="dropdown-item" href="{{url_for('import_and_export.import_collection')}}" target="_blank">Импорт</a></li>
-                    <li><a class="dropdown-item" href="{{url_for('import_and_export.export_collection')}}" target="_blank">Экспорт</a></li>
+                    {% if current_user.has_role('admin') %}
+                      <li><a class="dropdown-item" href="/admin" target="_blank">Панель управления</a></li>
+                      <li><a class="dropdown-item" href="{{url_for('import_and_export.import_collection')}}" target="_blank">Импорт</a></li>
+                      <li><a class="dropdown-item" href="{{url_for('import_and_export.export_collection')}}" target="_blank">Экспорт</a></li>
+                    {% endif %}
+                    <li><a class="dropdown-item" href="{{url_for('index.users_page')}}" target="_blank">Пользователи</a></li>
                     <li><a class="dropdown-item" href="{{url_for('statistics.statistics_main')}}" target="_blank">Статистика</a></li>
-                    <!-- <li><a class="dropdown-item" href="#">Action</a></li>
-                    <li><a class="dropdown-item" href="#">Another action</a></li>
-                    <li><a class="dropdown-item" href="#">Something else here</a></li> -->
                   </ul>
                 </li>
                 {% elif current_user.is_authenticated %}
@@ -65,7 +68,7 @@
         <script src="static/js/popper.min.js"></script>
         <script src="static/js/is.min.js"></script>
         <script src="https://polyfill.io/v3/polyfill.min.js?features=window.scroll"></script>
-        <script src="static/js/theme.js"></script>
+        <script src="static/js/theme.min.js"></script>
 
         <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
         {% block script %}
