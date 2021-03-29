@@ -91,7 +91,6 @@ def update_file(file_id):
     elif request.method == 'GET':
         file = DBManager.get_file(file_id)
         if file or request.args.get('new'):
-            logger.error(f'GET, is existing: {file}')
             return render_template("files/upload_documents.html", file=file)
         else:
             return f"Файл {file_id} не найден", 404
