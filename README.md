@@ -25,6 +25,6 @@ docker-compose up
 * [jQuery](https://jquery.com/)  
   
 ## Авторы  
-* **Дмитрий Иванов** - [ierikhon](https://github.com/HadronCollider)
+* **Дмитрий Иванов** - [HadronCollider](https://github.com/HadronCollider)
 * **Максим Доброхвалов** - [Nightbot1448](https://github.com/Nightbot1448)
 * **Никита Ваганов** - [justaleaf](https://github.com/justaleaf)
