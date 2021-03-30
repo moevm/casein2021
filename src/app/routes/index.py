@@ -1,10 +1,10 @@
 import pandas as pd
 
 from random import randint
-
-from app.db_models import User, Role, Solution, Course, DBManager
+import pandas as pd
+from app.db_models import User, Role, Solution, Course, AdapterEmployees, DBManager
 from flask import Blueprint, render_template, request, redirect, render_template, current_app
-from flask_security import login_required, current_user, roles_required, LoginForm, url_for_security
+from flask_security import login_required, current_user, roles_required, roles_accepted, LoginForm, url_for_security
 
 
 bp = Blueprint('index', __name__)
@@ -21,7 +21,6 @@ def init_roles_and_users():
         current_app.user_datastore.create_role(name="adapter")
         current_app.user_datastore.create_user(email='adapter@rosatom.ru',password='adapter', full_name='adapter name', roles=['adapter'])
 
-
 @bp.context_processor
 def login_context():
     return {
@@ -29,17 +28,17 @@ def login_context():
         'login_user_form': LoginForm(),
     }
 
-
 @bp.route('/')
 def index():
     return render_template("index.html")
 
-
 @bp.route('/users')
 @login_required
-@roles_required('admin')
+@roles_accepted('admin', 'adapter')
 def users_page():
-    return render_template("users.html", users=User.objects())
+    user_role_id = Role.objects(name='user').first().pk
+    users_list = User.objects.aggregate({ '$match': { 'roles': {'$in' :[user_role_id, '$roles']}}})
+    return render_template("users.html", users=users_list)
 
 
 @bp.route('/user/create')
@@ -47,52 +46,71 @@ def user_create():
     return redirect(f'/user/update/{randint(0,10*10)}?new=true')
 
 import logging
-
 logger = logging.getLogger('root')
 
-def compute_big_five(user):
-    course = Course.objects(name='Большая пятерка').first()
-    big_five_user = [
-        {'$match':{'course':course._id, 'user':user.pk}},
-        {'$group': {"_id":'$task', 'datetime':{'$max':"$datetime"}, 'score': {'$first':'$score'}}},
-        {'$project': {'_id':1, 'score':1}}
-    ]
-    user_response = pd.DataFrame(Solution.objects.aggregate(big_five_user))
-    if len(course.tasks) != user_response.shape[0]:
-        logger.error('Пройдены не все задачи')
-        return
-    out = map(lambda task: {
-            '_id': task._id,
-            'inverse': task.check.get('inverse'),
-            'direction': task.check.get('direction')
-        }, course.tasks)
-    tasks = pd.DataFrame(out).merge(user_response, how='outer', on='_id')
-    tasks.loc[tasks['inverse'], 'score'] = 4-tasks.loc[tasks['inverse'], 'score']
-    res = tasks[['direction','score']] \
-        .groupby('direction') \
-        .mean()
-    res.score = (res.loc[:, 'score'] * 25).astype(int) # / 4 (max value) * 100
-    logger.error(f'{res}')
-    return res
-
-def compute_user_statistic(user):
-    aggregation_user_course_stat = [
-        {'$match': {'user': user.pk}},
+def get_aggregation_user_course_stat(user):
+    bf = Course.objects(name='Большая пятерка').first()['_id']
+    return [
+        {'$match': {'user': user.pk, 'course': { '$ne': bf }}}, 
         {'$group': {'_id':{'course':"$course",'task':"$task"}, 'max':{'$max':"$score"}}},
         {'$group': {'_id':"$_id.course", 'sum':{'$sum':"$max"}}}
     ]
-    res = Solution.objects.aggregate(aggregation_user_course_stat)
-    logger.error(f'res: {list(res)}')
-    return res
 
-@bp.route('/user/<user_id>')
+
+def get_aggregation_adapters(adapter_id):
+    return [
+        { '$match': { 'roles': {'$in' :[adapter_id, '$roles']}}},
+        { '$project': {'full_name':1}}
+    ]
+
+
+@bp.route('/user/<user_id>', methods=['GET', 'POST'])
 @login_required
 def user_page(user_id):
     user = DBManager.get_user(user_id)
-    # res = compute_user_statistic(user)
-    compute_big_five(user)
-    return render_template("user_id.html", user=user) if user else (f'Пользователь {user_id} не найден', 404)
-
+    if not user:
+        return (f'Пользователь {user_id} не найден', 404)
+    if request.method == 'GET':
+        if not (current_user.has_role('adapter') 
+            or current_user.has_role('admin') 
+            or current_user == user):
+            return ('Forbidden', 403)
+        checking_user_has_user_role = user.has_role("user")
+        user_adapter = AdapterEmployees.objects(employee=user.pk).first()
+        adapter_id = Role.objects(name="adapter").first()
+        if not adapter_id:
+            return 'No adapter role', 500
+        adapter_id = adapter_id.pk
+        adapters = User.objects.aggregate(get_aggregation_adapters(adapter_id))
+        logger.error(f'adapters: {adapters}')
+        #TODO: display next
+        user_courses_stat = Solution.objects.aggregate(get_aggregation_user_course_stat(user))
+        return render_template("user_id.html", 
+            user=user, 
+            current_user_has_user_role=checking_user_has_user_role,
+            user_adapter=user_adapter,
+            adapters=list(adapters)) \
+            if user else (f'Пользователь {user_id} не найден', 404)
+    else:
+        employee = AdapterEmployees.objects(employee=user.pk).first()
+        if current_user.has_role('adapter'):
+            if not employee:
+                ad_emp = AdapterEmployees(employee=user.pk, adapter=current_user.pk)
+                ad_emp.save()
+                return 'saved'
+            else:
+                return 'У пользователя уже есть адаптер', 400
+        elif current_user.has_role('admin'):
+            if not employee:
+                ad_emp = AdapterEmployees(employee=user.pk, adapter=request.form.get('adapter'))
+                ad_emp.save()
+            else:
+                adapter = DBManager.get_user(request.form.get('adapter'))
+                employee.update(set__adapter=adapter)
+            return 'saved'
+        else:
+            return 'Forbidden', 403
+                   
 
 @bp.route('/user/update/<user_id>', methods=['GET', 'POST'])
 @login_required

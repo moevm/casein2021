@@ -36,9 +36,94 @@
           </div>
         </fieldset>
       </form>
+      {% if current_user_has_user_role %}
+        <label>Адаптер</label><br>
+        {% if current_user.has_role('admin') %}
+          <select id='select_user_adapter' name='select_user_adapter' class="form-select form-select-lg">
+            {% for adapter in adapters %}
+              <option id={{adapter._id}}>{{adapter.full_name}}</option>
+            {% endfor %}
+          </select>
+          <button class="btn btn-primary mt-3" id='set_adapter'>
+            {% if user_adapter %}
+              Переназначить адаптера
+            {% else %}
+              Назначить адаптера
+            {% endif %}
+          </button>
+        {% elif current_user.has_role('adapter') %}
+          {% if user_adapter %}
+            {% if user_adapter.adapter.pk == current_user.pk %}
+              <span>Вы адаптер этого сотрудника</span>
+            {% else %}
+              <span>У сотрудника уже есть адаптер</span>
+            {% endif %}
+          {% else %}
+            <button id='volunteer' class="btn btn-primary">Назначить себя</button>
+          {% endif %}
+        {% else %}
+          {% if user_adapter %}
+            <span>Ваш адаптер: TODONAME</span>
+          {% else %}
+            <span>Вам ещё не назначили адаптера</span>
+          {% endif %}
+        {% endif %}
+      {% endif %}
     </div>
   </div>
 </div>
 
+{% endblock %}
+
+{% block script %}
+<script>
+$(()=>{
+  {% if user_adapter %}
+    $('#select_user_adapter').val('{{user_adapter.adapter.full_name}}')
+  {% endif %}
+  $('#volunteer').on('click', ()=>{
+    $.ajax({
+				url: "{{url_for('index.user_page', user_id=user.pk)}}",
+				type:'POST',
+        // dataType: 'JSON',
+				contenType: 'application/json',
+				data: {
+            'adapter': null
+        },
+				success: function(resp){
+          $("#volunteer").html("Назначен")
+          console.log('success')
+          console.log(resp)
+				},
+				error: function(resp){
+          console.log('error')
+          console.log(resp.responseText)
+          $("#volunteer").html("Что-то пошло не так! Попробуйте позже")
+				},
+			});
+  })
+
+  $('#set_adapter').on('click', ()=>{
+    $.ajax({
+				url: "{{url_for('index.user_page', user_id=user.pk)}}",
+				type:'POST',
+				contenType: 'application/json',
+				data: {
+            'adapter': $('#select_user_adapter').children(":selected").attr("id")
+        },
+				success: function(resp){
+          $("#set_adapter").html("Назначен")
+          console.log('success')
+          console.log(resp)
+				},
+				error: function(resp){
+          console.log('error')
+          console.log(resp.responseText)
+          $("#set_adapter").html("Что-то пошло не так! Попробуйте позже")
+				},
+			});
+  })
+})
+</script>
 
 {% endblock %}
