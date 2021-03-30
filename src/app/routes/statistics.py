@@ -48,12 +48,6 @@ tasks_score_aggregate = [
     { '$project': { '_id':1, 'score': 1 } }
 ]
 
-@bp.before_app_first_request
-def create_temp_folder():
-    if not os.path.exists(current_app.config['TMP_FOLDER']):
-        os.makedirs(current_app.config['TMP_FOLDER'])
-
-
 @bp.route('/', methods=['GET'])
 @roles_accepted('admin', 'adapter')
 def statistics_main():
@@ -120,27 +114,28 @@ def get_users_tasks_for_course(course_id):
 @login_required
 @roles_accepted('admin', 'adapter')
 def course_tasks_statistics(course_id):
+    course = Course.objects(_id=course_id).only('name').first()
+    if not course:
+        return (f"Неверный id курса", 400)
     solutions = Solution.objects.aggregate(get_users_tasks_for_course(course_id))
     solutions = pd.DataFrame(solutions)
-    logger.error(f'solutions: {list(solutions)}')
     
     
     users = User.objects.aggregate(get_users_aggregate())
     users = pd.DataFrame(users).rename(columns={'_id':'user_id', 'full_name':'user_name'})
-    logger.error(f'users: {list(users)}')
 
     tasks = [{'task_id': it["_id"], 'task_name':it["name"]} for it in Course.objects(_id=course_id)[0].tasks]
     tasks = pd.DataFrame(tasks)
-    logger.error(f'tasks: {list(tasks)}')
     
+
     if solutions.shape[0] > 0:
         solution_stat = solutions \
-            .merge(users, how='outer', on='user_id') \
+            .merge(users, how='inner', on='user_id') \
             .merge(tasks, how='outer', on='task_id') \
             [['score','user_name','task_name']]
-        logger.error('stat')
-        logger.error(f'{list(solution_stat)}')
-        logger.error(f'{solution_stat}')
+        # logger.error('stat')
+        # logger.error(f'{list(solution_stat)}')
+        # logger.error(f'{solution_stat}')
         solution_pivot = pd.pivot_table(solution_stat, 'score', 'user_name', 'task_name', fill_value=0, dropna=False)
         diff = set(users.user_name).difference(set(solution_pivot.index))
         to_conc = pd.DataFrame(np.zeros((len(diff), solution_pivot.shape[1])), index=diff, columns=list(solution_pivot), dtype=np.int64)
@@ -154,7 +149,8 @@ def course_tasks_statistics(course_id):
         return render_template('statistics/course_statistics.html', 
             table=[[0]*tasks.shape[0]]*users.shape[0], 
             users=users.user_name,
-            titles=tasks.task_name)
+            titles=tasks.task_name,
+            course_name=course.name)
     
 
 @bp.route('/course_score/<course_id>', methods=['GET'])

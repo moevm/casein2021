@@ -1,0 +1,62 @@
+{% extends 'courses_and_tasks/task_passing.html' %}
+
+{% block task_passing%}
+    {% if task.task_type == 'bfive' %}
+        <div id="bfive_ans">
+            <ul id="select_ans" class="list-group">
+                <li style="list-style-type: none;">
+                    <input name="{{task._id}}" type="radio" id='0' required>
+                    <span>Полностью не согласен</span>
+                </li>
+                <li style="list-style-type: none;">
+                    <input name="{{task._id}}" type="radio" id='1' required>
+                    <span>Немного не согласен</span>
+                </li>
+                <li style="list-style-type: none;">
+                    <input name="{{task._id}}" type="radio" id='2' required>
+                    <span>Не уверен</span>
+                </li>
+                <li style="list-style-type: none;">
+                    <input name="{{task._id}}" type="radio" id='3' required>
+                    <span>Немного согласен</span>
+                </li>
+                <li style="list-style-type: none;">
+                    <input name="{{task._id}}" type="radio" id='4' required>
+                    <span>Полностью согласен</span>
+                </li>
+            </ul>
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block script %}
+<script>
+$(() => {
+    $('#check_test').html('Отправить')
+    $('#task').on('submit', (event) => {
+            $("#check_test").html("<span class='spinner-border spinner-border-sm'></span> Проверка")
+            event.preventDefault()
+            selected_ans = $('input[type=radio][name={{task._id}}]:checked').attr('id')
+
+            $.ajax({
+				url: "{{url_for('course.task_check', course_id=course._id, task_id=task._id)}}",
+				type:'POST',
+                dataType: 'JSON',
+				contenType: 'application/json',
+				data: {
+                    'answer': selected_ans
+                },
+				success: function(resp){
+                    $("#check_test").html("Отправлено")
+                    $("#check_result").html(`<pre>${resp['result']}</pre>`)
+                    console.log(resp)
+				},
+				error: function(resp){
+                    console.log(resp.responseText)
+                    $("#check_test").html("Что-то пошло не так! Попробуйте позже")
+				},
+			});
+        })
+})
+</script>
+{% endblock %}

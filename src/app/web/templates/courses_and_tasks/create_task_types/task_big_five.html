@@ -1,0 +1,83 @@
+{% extends 'courses_and_tasks/task_create.html' %}
+{% block task_type %}
+    <h1>BIG FIVE</h1>
+    {% if task_type == 'bfive'%}
+        <div class="mb-4">
+            <select id='big_five_direction' class="form-select form-select-lg">
+                {% for direction in big_five_directions %}
+                    <option value='{{direction}}' name=='{{direction}}'>{{direction}}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div id='task_check'>
+            <ul id="task_check_list" class="list-group">
+                <li style="list-style-type: none;" class="d-flex justify-content-start mb-2">
+                    <input class="form-check-input mt-3 me-2" type="radio" name="answer">
+                    <input type="text" class="form-control" value="Полностью не согласен" required disabled>
+                </li>
+                <li style="list-style-type: none;" class="d-flex justify-content-start mb-2">
+                    <input class="form-check-input mt-3 me-2" type="radio" name="answer">
+                    <input type="text" class="form-control" value="Немного не согласен" required disabled>
+                </li>
+                <li style="list-style-type: none;" class="d-flex justify-content-start mb-2">
+                    <input class="form-check-input mt-3 me-2" type="radio" name="answer">
+                    <input type="text" class="form-control" value="Не уверен" required disabled>
+                </li>
+                <li style="list-style-type: none;" class="d-flex justify-content-start mb-2">
+                    <input class="form-check-input mt-3 me-2" type="radio" name="answer">
+                    <input type="text" class="form-control" value="Немного согласен" required disabled>
+                </li>
+                <li style="list-style-type: none;" class="d-flex justify-content-start mb-2">
+                    <input class="form-check-input mt-3 me-2" type="radio" name="answer">
+                    <input type="text" class="form-control" value="Полностью согласен" required disabled>
+                </li>
+            </ul>
+        </div>
+        <div class="mb-3">
+            <label for="inverse" class="form-label">Инвертировать влияение?</label>
+            <input type='checkbox' id="inverse" name="inverse" class="form-check" {% if task and task.check["inverse"] %} checked {% endif %}/>
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block script %}
+<script>
+    $(function() {
+        $('#score').val(1)
+        {% if task %}
+            $('#big_five_direction').val("{{task.check['direction']}}")
+        {% endif %}
+        $("#task_form").on('submit', function (event) {
+            $("#save_task").html("<span class='spinner-border spinner-border-sm'></span> Сохранение")
+            event.preventDefault()
+            console.log('task type', $('#task_type').val())
+            var data = {
+					'name': $("#name").val(),
+                    'condition': $("#condition").val(),
+                    'score': 1,
+                    'task_type': $('#task_type').val(),
+                    'check': JSON.stringify({
+                        'inverse': $("#inverse").is(':checked'),
+                        'direction': $('#big_five_direction').val()
+                    })
+				}
+            console.log(data)
+                
+            $.ajax({
+				url: "{{url_for('course.task_course_update', course_id=course_id, task_id=task_id)}}",
+				type:'POST',
+				contenType: 'application/json',
+				data: data,
+				success: function(resp){
+                    // window.location.href="{{url_for('course.course_update', course_id=course_id)}}"
+				},
+				error: function(resp){
+                    $("#save_task").html("Что-то пошло не так! Попробуйте позже")
+				},
+			});
+        })
+
+    })
+</script>
+{% endblock %}

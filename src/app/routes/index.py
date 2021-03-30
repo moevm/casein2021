@@ -1,3 +1,5 @@
+import pandas as pd
+
 from random import randint
 import pandas as pd
 from app.db_models import User, Role, Solution, Course, AdapterEmployees, DBManager
