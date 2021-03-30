@@ -160,15 +160,52 @@ def course_score(course_id):
     return str(sum(map(lambda x: x.score, courses.tasks)))
 
 
-@bp.route('/courses_sum_score', methods=['GET'])
+def compute_big_five(user):
+    course = Course.objects(name='Большая пятерка').first()
+    big_five_user = [
+        {'$match':{'course':course._id, 'user':user.pk}},
+        {'$group': {"_id":'$task', 'datetime':{'$max':"$datetime"}, 'score': {'$first':'$score'}}},
+        {'$project': {'_id':1, 'score':1}}
+    ]
+    user_response = pd.DataFrame(Solution.objects.aggregate(big_five_user))
+    if len(course.tasks) != user_response.shape[0]:
+        logger.error('Пройдены не все задачи')
+        return
+    out = map(lambda task: {
+            '_id': task._id,
+            'inverse': task.check.get('inverse'),
+            'direction': task.check.get('direction')
+        }, course.tasks)
+    tasks = pd.DataFrame(out).merge(user_response, how='outer', on='_id')
+    tasks.loc[tasks['inverse'], 'score'] = 4-tasks.loc[tasks['inverse'], 'score']
+    res = tasks[['direction','score']] \
+        .groupby('direction') \
+        .mean()
+    res.score = (res.loc[:, 'score'] * 25).astype(int) # / 4 (max value) * 100
+    logger.error(f'{res}')
+    return res
+
+
+@bp.route('/user/<user_id>', methods=['GET'])
 @login_required
-def user_statistic():
+def user_statistic(user_id):
     courses = Course.objects.aggregate(course_score_aggregate)
     tasks = Task.objects.aggregate(tasks_score_aggregate)
     courses_df = pd.DataFrame(courses).rename(columns={'_id': 'course_id', 'tasks':'task_id'})
+    index_to_drop = courses_df.index[courses_df['name'] == 'Большая пятерка']
+    courses_df = courses_df.drop(index=index_to_drop)
     tasks_df = pd.DataFrame(tasks).rename(columns={'_id': 'task_id'})
-    
+    logger.error(courses_df)
     scores_df = tasks_df.merge(courses_df, how='inner', on='task_id')
-    res = scores_df.groupby('course_id').sum('score')
-    logger.error(res)
-    return 'ok'
+    user_scores = scores_df.groupby('name').sum('score')
+    logger.error(user_scores)
+    user = DBManager.get_user(user_id)
+    big_five_res = compute_big_five(user)
+    return render_template('statistics/user_stat.html', 
+        user=user, 
+        courses=user_scores.index, 
+        courses_scores=user_scores.values,
+        bf_params=big_five_res.index,
+        bf_scores=big_five_res.values
+        )
+
