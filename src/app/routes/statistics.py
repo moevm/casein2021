@@ -154,7 +154,7 @@ def course_tasks_statistics(course_id):
     
 
 @bp.route('/course_score/<course_id>', methods=['GET'])
-@login_required
+@roles_accepted('admin', 'adapter')
 def course_score(course_id):
     courses = DBManager.get_course(course_id)
     return str(sum(map(lambda x: x.score, courses.tasks)))
@@ -187,7 +187,7 @@ def compute_big_five(user):
 
 
 @bp.route('/user/<user_id>', methods=['GET'])
-@login_required
+@roles_accepted('admin', 'adapter')
 def user_statistic(user_id):
     courses = Course.objects.aggregate(course_score_aggregate)
     tasks = Task.objects.aggregate(tasks_score_aggregate)
@@ -205,7 +205,7 @@ def user_statistic(user_id):
         user=user, 
         courses=user_scores.index, 
         courses_scores=user_scores.values,
-        bf_params=big_five_res.index,
-        bf_scores=big_five_res.values
-        )
+        bf_params=big_five_res.index if (big_five_res is not None) else None,
+        bf_scores=big_five_res.values if (big_five_res is not None) else None
+    )
 

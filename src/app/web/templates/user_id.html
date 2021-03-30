@@ -69,6 +69,11 @@
           {% endif %}
         {% endif %}
       {% endif %}
+      {% if current_user.has_role('admin') or current_user.has_role('adapter') %}
+          <br>
+              <a class="btn btn-primary mt-3" href="{{url_for('statistics.user_statistic', user_id=user.pk)}}">
+              Открыть статистику</a>
+      {% endif %}
     </div>
   </div>
 </div>
